@@ -3,11 +3,11 @@ cmake_minimum_required (VERSION 3.1)
 project(simc)
 
 # switch on/off different build targets
-option(BUILD_GUI "Build the Qt gui along with cli binary" ON)
+option(BUILD_GUI "Build the Qt gui along with cli binary" OFF)
 
 # disable various features that may be anvailable or unneeded
-option(SC_NO_THREADING "Disable all dependencies on pthreads" OFF)
-option(SC_NO_NETWORKING "Disable all networking related stuff." OFF)
+option(SC_NO_THREADING "Disable all dependencies on pthreads" ON)
+option(SC_NO_NETWORKING "Disable all networking related stuff." ON)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -25,9 +25,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # link in all activated targets
 add_subdirectory(engine)
-if (BUILD_GUI)
-  add_subdirectory(qt)
-endif()
 
 # enable warnings
 if (MSVC)
@@ -39,6 +36,6 @@ endif()
 # 'simc' command line interface target
 include(source_files/cmake_engine_main.txt)
 string(REGEX REPLACE "([^;]+)" "engine/\\1" source_files "${source_files}")
-add_executable(simc ${source_files})
+add_library(simc ${source_files})
 target_link_libraries(simc engine)
 

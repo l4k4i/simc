@@ -46,6 +46,7 @@ doc/ext/breathe/
 engine/simc
 engine/sc_rng
 /build
+/buildwasm
 results.html
 simc_gui.simc
 simc_log.txt

@@ -20,6 +20,7 @@
 
 #if !defined(SC_WINDOWS)
 #include <sys/time.h>
+#include <time.h>
 #endif
 
 // If you turn this on, you will need to add -lrt to LINK_LIBS in Makefile
