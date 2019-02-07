@@ -21,6 +21,7 @@
 #  define SC_WINDOWS
 #  define WIN32_LEAN_AND_MEAN
 #  define VC_EXTRALEAN
+#  define NOMINMAX
 #  ifndef _CRT_SECURE_NO_WARNINGS
 #    define _CRT_SECURE_NO_WARNINGS
 #  endif
@@ -64,8 +65,8 @@
 #if defined( SC_CLANG ) && SC_CLANG < 30500
 #  error "clang++ below version 3.5 not supported"
 #endif
-#if defined( SC_GCC ) && SC_GCC < 40800
-#  error "g++ below version 4.8 not supported"
+#if defined( SC_GCC ) && SC_GCC < 50000
+#  error "g++ below version 5 not supported"
 #endif
 
 

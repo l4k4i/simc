@@ -624,6 +624,11 @@ void print_iteration_data( std::ostream& os, const sim_t& sim )
 
   size_t n_spacer = ( sim.target_list.size() - 1 ) * 10 + ( sim.target_list.size() - 2 ) * 2 + 2;
   std::string spacer_str_1( n_spacer, '-' ), spacer_str_2( n_spacer, ' ' );
+  if ( sim.fixed_time == 1 )
+  {
+    spacer_str_1.clear();
+    spacer_str_2.clear();
+  }
 
   fmt::print( os, "\nIteration data:\n" );
   if ( sim.low_iteration_data.size() && sim.high_iteration_data.size() )
@@ -696,30 +701,48 @@ void print_iteration_data( std::ostream& os, const sim_t& sim )
                    spacer_str_2 );
     fmt::print( os, "+--------+-----------+----------------------+------------{}+\n",
                    spacer_str_1 );
-    fmt::print( os, "|  Iter# |    Metric |                 Seed |  {}Health(s) |\n",
-                   spacer_str_2 );
+    if ( sim.fixed_time == 0 )
+    {
+      fmt::print( os, "|  Iter# |    Metric |                 Seed |  {}Health(s) |\n",
+                     spacer_str_2 );
+    }
+    else
+    {
+      fmt::print( os, "|  Iter# |    Metric |                 Seed |  {}   Length |\n",
+                     spacer_str_2 );
+    }
     fmt::print( os, "+--------+-----------+----------------------+------------{}+\n",
                    spacer_str_1 );
 
     for ( auto& data : sim.iteration_data )
     {
-      std::ostringstream health_s;
-      for ( size_t health_idx = 0; health_idx < data.target_health.size();
-            ++health_idx )
+      if ( sim.fixed_time == 0 )
       {
-        health_s << std::setw( 10 ) << std::right
-                 << data.target_health[ health_idx ];
-
-        if ( health_idx < data.target_health.size() - 1 )
+        std::ostringstream health_s;
+        for ( size_t health_idx = 0; health_idx < data.target_health.size();
+              ++health_idx )
         {
-          health_s << ", ";
-        }
-      }
+          health_s << std::setw( 10 ) << std::right
+                   << data.target_health[ health_idx ];
 
-      fmt::print( os, "| {:6} | {:9.1f} | {:20} | {} |\n",
-          data.iteration,
-          data.metric,
-          data.seed, health_s.str().c_str() );
+          if ( health_idx < data.target_health.size() - 1 )
+          {
+            health_s << ", ";
+          }
+        }
+
+        fmt::print( os, "| {:6} | {:9.1f} | {:20} | {} |\n",
+            data.iteration,
+            data.metric,
+            data.seed, health_s.str().c_str() );
+      }
+      else
+      {
+        fmt::print( os, "| {:6} | {:9.1f} | {:20} | {:10.3f} |\n",
+            data.iteration,
+            data.metric,
+            data.seed, data.iteration_length );
+      }
     }
     fmt::print( os, "'--------+-----------+----------------------+------------{}'\n",
                    spacer_str_1 );
@@ -1066,6 +1089,7 @@ void print_reference_dps( std::ostream& os, sim_t& sim )
   }
 }
 
+#ifdef ACTOR_EVENT_BOOKKEEPING
 struct sort_by_event_stopwatch
 {
   bool operator()( player_t* l, player_t* r )
@@ -1076,7 +1100,6 @@ struct sort_by_event_stopwatch
 
 void event_manager_infos( std::ostream& os, const sim_t& sim )
 {
-#if defined( ACTOR_EVENT_BOOKKEEPING )
   if ( !sim.event_mgr.monitor_cpu )
     return;
 
@@ -1100,8 +1123,8 @@ void event_manager_infos( std::ostream& os, const sim_t& sim )
         p->event_stopwatch.current() / total_event_time * 100.0,
         p->name() );
   }
-#endif  // ACTOR_EVENT_BOOKKEEPING
 }
+#endif // ACTOR_EVENT_BOOKKEEPING
 
 void print_collected_amount( std::ostream& os, const player_t& p, std::string name, const extended_sample_data_t& sd )
 {
@@ -1278,7 +1301,9 @@ void print_text_report( std::ostream& os, sim_t* sim, bool detail )
     print_iteration_data( os, *sim );
     print_raid_scale_factors( os, sim );
     print_reference_dps( os, *sim );
+#ifdef ACTOR_EVENT_BOOKKEEPING
     event_manager_infos( os, *sim );
+#endif
   }
 
   fmt::print( os, "\n" );

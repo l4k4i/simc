@@ -22,12 +22,11 @@ namespace spells
 {
 struct mind_sear_tick_t;
 struct shadowy_apparition_spell_t;
-struct blessed_dawnlight_medallion_t;
 struct angelic_feather_t;
 struct divine_star_t;
+struct apotheosis_t;
 struct halo_t;
 struct levitate_t;
-struct power_infusion_t;
 struct smite_t;
 struct summon_pet_t;
 struct summon_shadowfiend_t;
@@ -62,6 +61,7 @@ public:
   struct buffs_t
   {
     propagate_const<buff_t*> schism;
+	propagate_const<buff_t*> apotheosis;
   } buffs;
 
   priest_t& priest()
@@ -91,7 +91,6 @@ public:
   struct
   {
     // Talents
-    propagate_const<buff_t*> power_infusion;
     propagate_const<buff_t*> twist_of_fate;
 
     // Discipline
@@ -99,8 +98,11 @@ public:
     propagate_const<buff_t*> borrowed_time;
     propagate_const<buff_t*> holy_evangelism;
     propagate_const<buff_t*> inner_focus;
+    propagate_const<buff_t*> power_of_the_dark_side;
+    propagate_const<buff_t*> sins_of_the_many;
 
     // Holy
+	propagate_const<buff_t*> apotheosis;
 
     // Shadow
     propagate_const<buff_t*> dispersion;
@@ -112,29 +114,17 @@ public:
     propagate_const<buff_t*> surrender_to_madness;
     propagate_const<buff_t*> surrendered_to_madness;
     propagate_const<buff_t*> vampiric_embrace;
-    propagate_const<buff_t*> void_ray;
     propagate_const<buff_t*> void_torrent;
     propagate_const<buff_t*> voidform;
-
-    // Set Bonus
-    propagate_const<stat_buff_t*> power_overwhelming;  // T19OH
-    propagate_const<buff_t*> void_vb;                  // T19 Shadow 4pc
-    propagate_const<buff_t*> empty_mind;               // T20 Shadow 2pc
-    propagate_const<buff_t*> overwhelming_darkness;    // T21 Shadow 4pc
-
-    // Legion Legendaries
-    propagate_const<buff_t*> sephuzs_secret;
-    // Shadow
-    propagate_const<buff_t*> anunds_last_breath;       // Anund's Seared Shackles stack counter
-    propagate_const<buff_t*> the_twins_painful_touch;  // To track first casting
-    propagate_const<buff_t*> zeks_exterminatus;        // Aura for Zeks proc
-    propagate_const<buff_t*> iridis_empowerment;       // Fake aura for Helm
 
     // Azerite Powers
     // Shadow
     propagate_const<buff_t*> chorus_of_insanity;
     propagate_const<buff_t*> harvested_thoughts;
     propagate_const<buff_t*> whispers_of_the_damned;
+
+    // Holy
+	  propagate_const<buff_t*> sacred_flame;
 
   } buffs;
 
@@ -151,7 +141,6 @@ public:
 
     const spell_data_t* psychic_voice;
 
-    const spell_data_t* power_infusion;
     const spell_data_t* mindbender;
 
     // Discipline
@@ -166,6 +155,7 @@ public:
     const spell_data_t* shield_discipline;
     const spell_data_t* dominant_mind;
 
+    const spell_data_t* sins_of_the_many;
     const spell_data_t* sanctuary;
     const spell_data_t* clarity_of_will;
     const spell_data_t* shadow_covenant;
@@ -177,14 +167,14 @@ public:
 
     // Holy
 
+    const spell_data_t* enlightenment;
     const spell_data_t* trail_of_light;
     const spell_data_t* enduring_renewal;
-    const spell_data_t* enlightenment;
 
-    const spell_data_t* body_and_mind;  // NYI
+    const spell_data_t* angels_mercy;  // NYI
     const spell_data_t* perseverance;   // NYI
 
-    const spell_data_t* light_of_the_naaru;
+    const spell_data_t* cosmic_ripple;
     const spell_data_t* guardian_angel;
     const spell_data_t* after_life;  // NYI
 
@@ -196,18 +186,19 @@ public:
 
     const spell_data_t* benediction;
 
-    const spell_data_t* cosmic_ripple;
+    const spell_data_t* light_of_the_naaru;
     const spell_data_t* apotheosis;
     const spell_data_t* holy_word_salvation;
 
     // Shadow
     // T15
     const spell_data_t* fortress_of_the_mind;
-    const spell_data_t* shadow_word_void;
     const spell_data_t* shadowy_insight;
+    const spell_data_t* shadow_word_void;
     // T30
     const spell_data_t* mania;
     const spell_data_t* sanlayn;  // NYI
+    const spell_data_t* intangibility; // NYI
     // T45
     const spell_data_t* dark_void;
     const spell_data_t* misery;
@@ -228,15 +219,6 @@ public:
     const spell_data_t* surrender_to_madness;
   } talents;
 
-  struct legendary_t
-  {
-    const spell_data_t* sephuzs_secret;
-
-    legendary_t() : sephuzs_secret( spell_data_t::not_found() )
-    {
-    }
-  } legendary;
-
   // Specialization Spells
   struct
   {
@@ -253,14 +235,23 @@ public:
     const spell_data_t* mysticism;
     const spell_data_t* spirit_shell;
     const spell_data_t* enlightenment;
+    const spell_data_t* discipline_priest;
+    const spell_data_t* power_of_the_dark_side; /// For buffing the damage of penance
 
     // Holy
     const spell_data_t* holy;  /// General holy data
     const spell_data_t* rapid_renewal;
+    const spell_data_t* holy_words;
+    const spell_data_t* holy_word_chastise;
+    const spell_data_t* holy_word_serenity;
+    const spell_data_t* holy_nova;
+    const spell_data_t* holy_fire;
+	  const spell_data_t* apotheosis;
     const spell_data_t* serendipity;
     const spell_data_t* divine_providence;
 
     const spell_data_t* focused_will;
+    const spell_data_t* holy_priest;
 
     // Shadow
     const spell_data_t* shadow;  /// General shadow data
@@ -273,7 +264,7 @@ public:
   // Mastery Spells
   struct
   {
-    const spell_data_t* absolution;  // NYI
+    const spell_data_t* grace;  // NYI
     const spell_data_t* echo_of_light;
     const spell_data_t* madness;
   } mastery_spells;
@@ -281,6 +272,7 @@ public:
   // Cooldowns
   struct
   {
+    // Discipline
     propagate_const<cooldown_t*> chakra;
     propagate_const<cooldown_t*> mindbender;
     propagate_const<cooldown_t*> penance;
@@ -288,12 +280,18 @@ public:
     propagate_const<cooldown_t*> shadowfiend;
     propagate_const<cooldown_t*> silence;
 
+    // Shadow
     propagate_const<cooldown_t*> mind_blast;
     propagate_const<cooldown_t*> void_bolt;
     propagate_const<cooldown_t*> mind_bomb;
     propagate_const<cooldown_t*> psychic_horror;
-    propagate_const<cooldown_t*> sephuzs_secret;
     propagate_const<cooldown_t*> dark_ascension;
+
+    // Holy
+    propagate_const<cooldown_t*> holy_word_chastise;
+    propagate_const<cooldown_t*> holy_word_serenity;
+    propagate_const<cooldown_t*> holy_fire;
+	  propagate_const<cooldown_t*> apotheosis;
   } cooldowns;
 
   // Gains
@@ -309,7 +307,6 @@ public:
     propagate_const<gain_t*> insanity_mind_flay;
     propagate_const<gain_t*> insanity_mind_sear;
     propagate_const<gain_t*> insanity_pet;
-    propagate_const<gain_t*> insanity_power_infusion;
     propagate_const<gain_t*> insanity_shadow_crash;
     propagate_const<gain_t*> insanity_shadow_word_death;
     propagate_const<gain_t*> insanity_shadow_word_pain_ondamage;
@@ -323,10 +320,10 @@ public:
     propagate_const<gain_t*> insanity_blessing;
     propagate_const<gain_t*> shadowy_insight;
     propagate_const<gain_t*> vampiric_touch_health;
-    propagate_const<gain_t*> insanity_call_to_the_void;
     propagate_const<gain_t*> insanity_dark_void;
     propagate_const<gain_t*> insanity_dark_ascension;
     propagate_const<gain_t*> insanity_death_throes;
+    propagate_const<gain_t*> power_of_the_dark_side;
   } gains;
 
   // Benefits
@@ -337,10 +334,6 @@ public:
   // Procs
   struct
   {
-    propagate_const<proc_t*> legendary_zeks_exterminatus;
-    propagate_const<proc_t*> legendary_zeks_exterminatus_overflow;
-    propagate_const<proc_t*> legendary_anunds_last_breath;
-    propagate_const<proc_t*> legendary_anunds_last_breath_overflow;
     propagate_const<proc_t*> shadowy_insight;
     propagate_const<proc_t*> shadowy_insight_overflow;
     propagate_const<proc_t*> serendipity;
@@ -351,13 +344,16 @@ public:
     propagate_const<proc_t*> surge_of_light_overflow;
     propagate_const<proc_t*> void_eruption_has_dots;
     propagate_const<proc_t*> void_eruption_no_dots;
-    propagate_const<proc_t*> void_tendril;
+    propagate_const<proc_t*> holy_fire_cd;
+    propagate_const<proc_t*> power_of_the_dark_side;
+    propagate_const<proc_t*> power_of_the_dark_side_overflow;
   } procs;
 
   struct realppm_t
   {
-    propagate_const<real_ppm_t*> call_to_the_void;
     propagate_const<real_ppm_t*> shadowy_insight;
+    propagate_const<real_ppm_t*> power_of_the_dark_side;
+    propagate_const<real_ppm_t*> harvested_thoughts;
   } rppm;
 
   // Special
@@ -365,21 +361,11 @@ public:
   {
     propagate_const<actions::spells::mind_sear_tick_t*> mind_sear_tick;
     propagate_const<actions::spells::shadowy_apparition_spell_t*> shadowy_apparitions;
-    propagate_const<action_t*> mental_fortitude;
-    propagate_const<action_t*> void_tendril;
   } active_spells;
 
+  // Items
   struct
   {
-    // Legion Legendaries Shadow
-    const special_effect_t* anunds_seared_shackles;     // wrist
-    const special_effect_t* mother_shahrazs_seduction;  // shoulder
-    const special_effect_t* mangazas_madness;           // belt
-    const special_effect_t* zenkaram_iridis_anadem;     // helm
-    const special_effect_t* the_twins_painful_touch;    // ring
-    const special_effect_t* zeks_exterminatus;          // cloak
-    const special_effect_t* sephuzs_secret;             // ring
-    const special_effect_t* heart_of_the_void;          // chest
   } active_items;
 
   // Pets
@@ -395,7 +381,6 @@ public:
     bool autoUnshift                 = true;  // Shift automatically out of stance/form
     bool priest_fixed_time           = true;
     bool priest_ignore_healing       = false;  // Remove Healing calculation codes
-    bool priest_suppress_sephuz      = false;  // Sephuz's Secret won't proc if set true
     int priest_set_voidform_duration = 0;      // Voidform will always have this duration
   } options;
 
@@ -404,6 +389,7 @@ public:
   {
     azerite_power_t sanctum;
     // Holy
+	  azerite_power_t sacred_flame;
     // Disc
     azerite_power_t depth_of_the_shadows;
     // Shadow
@@ -419,8 +405,6 @@ public:
   struct insanity_end_event_t;
 
   priest_t( sim_t* sim, const std::string& name, race_e r );
-
-  priest_td_t* find_target_data( player_t* target ) const;
 
   // player_t overrides
   void init_base_stats() override;
@@ -442,10 +426,6 @@ public:
   }
   role_e primary_role() const override;
   stat_e convert_hybrid_stat( stat_e s ) const override;
-  stat_e primary_stat() const override
-  {
-    return STAT_INTELLECT;
-  }
   void assess_damage( school_e school, dmg_e dtype, action_state_t* s ) override;
   double composite_melee_haste() const override;
   double composite_melee_speed() const override;
@@ -463,8 +443,6 @@ public:
   void init_rng() override;
   priest_td_t* get_target_data( player_t* target ) const override;
   expr_t* create_expression( const std::string& name_str ) override;
-  void trigger_sephuzs_secret( const action_state_t* state, spell_mechanic mechanic, double proc_chance = -1.0 );
-  void trigger_call_to_the_void( const dot_t* d );
 
   void do_dynamic_regen() override
   {
@@ -474,6 +452,8 @@ public:
     insanity.drain();
     insanity.adjust_end_event();
   }
+
+  void adjust_holy_word_serenity_cooldown();
 
 private:
   void create_cooldowns();
@@ -906,8 +886,6 @@ namespace actions
 template <typename Base>
 struct priest_action_t : public Base
 {
-  bool shadow_damage_increase;
-  bool shadow_dot_increase;
 
   struct {
     bool voidform_da;
@@ -918,27 +896,88 @@ struct priest_action_t : public Base
     bool twist_of_fate_ta;
     bool mastery_madness_da;
     bool mastery_madness_ta;
+    bool shadow_priest_da;
+    bool shadow_priest_ta;
+    bool holy_priest_heal_da;
+    bool holy_priest_heal_ta;
+    bool holy_priest_damage_da;
+    bool holy_priest_damage_ta;
+    bool discipline_priest_heal_da;
+    bool discipline_priest_heal_ta;
+    bool discipline_priest_damage_da;
+    bool discipline_priest_damage_ta;
+    bool sins_of_the_many_da;
   } affected_by;
 
-  bool is_mastery_spell;
 
 public:
   priest_action_t( const std::string& n, priest_t& p, const spell_data_t* s = spell_data_t::nil() )
     : ab( n, &p, s ),
-      shadow_damage_increase( ab::data().affected_by( p.specs.shadow_priest->effectN( 1 ) ) ),
-      shadow_dot_increase( ab::data().affected_by( p.specs.shadow_priest->effectN( 2 ) ) ),
-      affected_by(),
-      is_mastery_spell( false )
+      affected_by()
   {
     init_affected_by();
     ab::may_crit          = true;
     ab::tick_may_crit     = true;
     ab::weapon_multiplier = 0.0;
-    // Manual additions of Dark Ascension, Shadowy Apparitions and Shadow Crash base spells
-    if ( shadow_damage_increase || s->id() == 280711u || s->id() == 205385u || s->id() == 78203u )
-      ab::base_dd_multiplier *= 1.0 + p.specs.shadow_priest->effectN( 1 ).percent();
-    if ( shadow_dot_increase )
-      ab::base_td_multiplier *= 1.0 + p.specs.shadow_priest->effectN( 2 ).percent();
+
+    if ( p.specialization() == PRIEST_SHADOW )
+    {
+      if ( affected_by.shadow_priest_da )
+      {
+        ab::base_dd_multiplier *= 1.0 + p.specs.shadow_priest->effectN( 1 ).percent();
+      }
+      if ( affected_by.shadow_priest_ta )
+      {
+        ab::base_td_multiplier *= 1.0 + p.specs.shadow_priest->effectN( 2 ).percent();
+      }
+    }
+
+    if ( affected_by.holy_priest_heal_da )
+    {
+      ab::base_dd_multiplier *= 1.0 + p.specs.holy_priest->effectN( 1 ).percent();
+    }
+    if ( affected_by.holy_priest_heal_ta )
+    {
+      ab::base_td_multiplier *= 1.0 + p.specs.holy_priest->effectN( 2 ).percent();
+    }
+
+    if ( affected_by.holy_priest_damage_da )
+    {
+      ab::base_dd_multiplier *= 1.0 + p.specs.holy_priest->effectN( 3 ).percent();
+    }
+    if ( affected_by.holy_priest_damage_ta )
+    {
+      ab::base_td_multiplier *= 1.0 + p.specs.holy_priest->effectN( 4 ).percent();
+    }
+
+    if (affected_by.discipline_priest_heal_da)
+    {
+        ab::base_dd_multiplier *= 1.0 + p.specs.discipline_priest->effectN(1).percent();
+    }
+    if (affected_by.discipline_priest_heal_ta)
+    {
+        ab::base_td_multiplier *= 1.0 + p.specs.discipline_priest->effectN(2).percent();
+    }
+
+    if (affected_by.discipline_priest_damage_da)
+    {
+        ab::base_dd_multiplier *= 1.0 + p.specs.discipline_priest->effectN(4).percent();
+    }
+    if (affected_by.discipline_priest_damage_ta)
+    {
+        ab::base_td_multiplier *= 1.0 + p.specs.discipline_priest->effectN(5).percent();
+    }
+
+    else if (p.specialization() == PRIEST_DISCIPLINE)
+    {
+
+        if (p.talents.sins_of_the_many->ok())
+        {
+            ab::base_dd_multiplier *= 1.0 + p.talents.sins_of_the_many->effectN(1).percent();
+            ab::base_td_multiplier *= 1.0 + p.talents.sins_of_the_many->effectN(1).percent();
+        }
+    }
+
   }
 
   /**
@@ -950,14 +989,25 @@ public:
       const spelleffect_data_t& effect;
       bool& affects;
     } affects[] = {
-        {priest().buffs.voidform->data().effectN(1),      affected_by.voidform_da},
-        {priest().buffs.voidform->data().effectN(2),      affected_by.voidform_ta},
-        {priest().buffs.shadowform->data().effectN(1),    affected_by.shadowform_da},
-        {priest().buffs.shadowform->data().effectN(5),    affected_by.shadowform_ta},
-        {priest().buffs.twist_of_fate->data().effectN(1), affected_by.twist_of_fate_da},
-        {priest().buffs.twist_of_fate->data().effectN(2), affected_by.twist_of_fate_ta},
-        {priest().mastery_spells.madness->effectN(1),     affected_by.mastery_madness_da},
-        {priest().mastery_spells.madness->effectN(2),     affected_by.mastery_madness_ta},
+        {priest().buffs.voidform->data().effectN( 1 ),      affected_by.voidform_da},
+        {priest().buffs.voidform->data().effectN( 2 ),      affected_by.voidform_ta},
+        {priest().buffs.shadowform->data().effectN( 1 ),    affected_by.shadowform_da},
+        {priest().buffs.shadowform->data().effectN( 4 ),    affected_by.shadowform_ta},
+        {priest().buffs.twist_of_fate->data().effectN( 1 ), affected_by.twist_of_fate_da},
+        {priest().buffs.twist_of_fate->data().effectN( 2 ), affected_by.twist_of_fate_ta},
+        {priest().mastery_spells.madness->effectN( 1 ),     affected_by.mastery_madness_da},
+        {priest().mastery_spells.madness->effectN( 2 ),     affected_by.mastery_madness_ta},
+        {priest().specs.shadow_priest->effectN( 1 ),        affected_by.shadow_priest_da},
+        {priest().specs.shadow_priest->effectN( 2 ),        affected_by.shadow_priest_ta},
+        {priest().specs.holy_priest->effectN( 1 ),          affected_by.holy_priest_heal_da},
+        {priest().specs.holy_priest->effectN( 2 ),          affected_by.holy_priest_heal_ta},
+        {priest().specs.holy_priest->effectN( 3 ),          affected_by.holy_priest_damage_da},
+        {priest().specs.holy_priest->effectN( 4 ),          affected_by.holy_priest_damage_ta},
+        {priest().specs.discipline_priest->effectN( 1 ),    affected_by.discipline_priest_heal_da},
+        {priest().specs.discipline_priest->effectN( 2 ),    affected_by.discipline_priest_heal_ta},
+        {priest().specs.discipline_priest->effectN( 4 ),    affected_by.discipline_priest_damage_da},
+        {priest().specs.discipline_priest->effectN( 5 ),    affected_by.discipline_priest_damage_ta},
+        {priest().talents.sins_of_the_many->effectN( 1 ),   affected_by.sins_of_the_many_da}, //Sins of the Many affects both direct damage and dot damage
     };
 
     for (const auto& a : affects)
@@ -973,16 +1023,6 @@ public:
   priest_td_t& get_td( player_t* t )
   {
     return *( priest().get_target_data( t ) );
-  }
-
-  priest_td_t* find_td( player_t* t )
-  {
-    return priest().find_target_data( t );
-  }
-
-  const priest_td_t* find_td( player_t* t ) const
-  {
-    return priest().find_target_data( t );
   }
 
   bool trigger_shadowy_insight()
@@ -1003,52 +1043,27 @@ public:
       return true;
     }
     return false;
-  }
+  };
 
-  bool trigger_zeks()
+  void trigger_power_of_the_dark_side()
   {
-    if ( priest().buffs.zeks_exterminatus->trigger() )
-    {
-      // proc doesn't reset the CD :
-      // priest().cooldowns.shadow_word_death->reset(true);
-
-      if ( priest().buffs.zeks_exterminatus->check() )
+      int stack = priest().buffs.power_of_the_dark_side->check();
+      if (priest().buffs.power_of_the_dark_side->trigger())
       {
-        priest().procs.legendary_zeks_exterminatus_overflow->occur();
+          if (priest().buffs.power_of_the_dark_side->check() == stack)
+          {
+              priest().procs.power_of_the_dark_side_overflow->occur();
+          }
+          else
+          {
+              priest().procs.power_of_the_dark_side->occur();
+          }
       }
-      else
-      {
-        priest().procs.legendary_zeks_exterminatus->occur();
-      }
-      return true;
-    }
-    return false;
-  }
-
-  void trigger_anunds()
-  {
-    int stack = priest().buffs.anunds_last_breath->check();
-    priest().buffs.anunds_last_breath->trigger();
-
-    if ( priest().buffs.anunds_last_breath->check() == stack )
-    {
-      priest().procs.legendary_anunds_last_breath_overflow->occur();
-    }
-    else
-    {
-      priest().procs.legendary_anunds_last_breath->occur();
-    }
   }
 
   double cost() const override
   {
     double c = ab::cost();
-
-    if ( priest().buffs.power_infusion->check() && priest().specialization() != PRIEST_SHADOW )
-    {
-      c *= 1.0 + priest().buffs.power_infusion->data().effectN( 2 ).percent();
-      c = std::floor( c );
-    }
 
     return c;
   }
@@ -1064,27 +1079,30 @@ public:
   double action_da_multiplier() const override
   {
     double m = ab::action_da_multiplier();
+    double lotv_multiplier = 0.0;
 
-    if ( affected_by.mastery_madness_da )
+    if ( priest().specialization() == PRIEST_SHADOW )
     {
-      m *= 1.0 + priest().cache.mastery_value();
-    }
-    if ( affected_by.voidform_da && priest().buffs.voidform->check()  )
-    {
-      double vf_multiplier = priest().buffs.voidform->data().effectN(1).percent();
-      if ( priest().active_items.zenkaram_iridis_anadem )
+      if ( affected_by.mastery_madness_da )
       {
-        vf_multiplier += priest().buffs.iridis_empowerment->data().effectN(2).percent();
+        m *= 1.0 + priest().cache.mastery_value();
       }
-      m *= 1.0 + vf_multiplier ;
-    }
-    if ( affected_by.shadowform_da && priest().buffs.shadowform->check()  )
-    {
-      m *= 1.0 + priest().buffs.shadowform->data().effectN(1).percent();
-    }
-    if ( affected_by.twist_of_fate_da && priest().buffs.twist_of_fate->check()  )
-    {
-      m *= 1.0 + priest().buffs.twist_of_fate->data().effectN(1).percent();
+      if ( affected_by.voidform_da && priest().buffs.voidform->check()  )
+      {
+        double vf_multiplier = priest().buffs.voidform->data().effectN( 1 ).percent();
+        // TODO: add this directly into vf_multiplier after PTR
+        // Grab the Legacy of the Void Damage increase
+        lotv_multiplier = priest().talents.legacy_of_the_void->effectN( 7 ).percent();
+        m *= 1.0 + vf_multiplier + lotv_multiplier;
+      }
+      if ( affected_by.shadowform_da && priest().buffs.shadowform->check()  )
+      {
+        m *= 1.0 + priest().buffs.shadowform->data().effectN(1).percent();
+      }
+      if ( affected_by.twist_of_fate_da && priest().buffs.twist_of_fate->check()  )
+      {
+        m *= 1.0 + priest().buffs.twist_of_fate->data().effectN(1).percent();
+      }
     }
     return m;
   }
@@ -1092,6 +1110,7 @@ public:
   double action_ta_multiplier() const override
   {
     double m = ab::action_ta_multiplier();
+    double lotv_multiplier = 0.0;
 
     if ( affected_by.mastery_madness_ta )
     {
@@ -1100,15 +1119,14 @@ public:
     if ( affected_by.voidform_ta && priest().buffs.voidform->check() )
     {
       double vf_multiplier = priest().buffs.voidform->data().effectN(2).percent();
-      if ( priest().active_items.zenkaram_iridis_anadem )
-      {
-        vf_multiplier += priest().buffs.iridis_empowerment->data().effectN(2).percent();
-      }
-      m *= 1.0 + vf_multiplier ;
+      // TODO: add this directly into vf_multiplier after PTR
+      // Grab the Legacy of the Void Damage increase
+      lotv_multiplier = priest().talents.legacy_of_the_void->effectN( 7 ).percent();
+      m *= 1.0 + vf_multiplier + lotv_multiplier;
     }
     if ( affected_by.shadowform_ta && priest().buffs.shadowform->check() )
     {
-      m *= 1.0 + priest().buffs.shadowform->data().effectN(5).percent();
+      m *= 1.0 + priest().buffs.shadowform->data().effectN(4).percent();
     }
     if ( affected_by.twist_of_fate_ta && priest().buffs.twist_of_fate->check() )
     {
@@ -1233,7 +1251,7 @@ struct priest_spell_t : public priest_action_t<spell_t>
   }
 
   /* Based on previous implementation ( pets don't count but get full heal )
-   * and http://www.wowhead.com/spell=15286#comments:id=1796701
+   * and https://www.wowhead.com/spell=15286#comments:id=1796701
    * Last checked 2013-05-25
    */
   void trigger_vampiric_embrace( action_state_t* s )
@@ -1351,9 +1369,9 @@ struct priest_module_t final : public module_t
   }
   void init( player_t* p ) const override
   {
-    p->buffs.guardian_spirit = buff_creator_t( p, "guardian_spirit",
+    p->buffs.guardian_spirit = make_buff( p, "guardian_spirit",
                                                p->find_spell( 47788 ) );  // Let the ability handle the CD
-    p->buffs.pain_supression = buff_creator_t( p, "pain_supression",
+    p->buffs.pain_supression = make_buff( p, "pain_supression",
                                                p->find_spell( 33206 ) );  // Let the ability handle the CD
   }
   void static_init() const override

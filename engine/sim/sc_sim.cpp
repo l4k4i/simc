@@ -344,7 +344,10 @@ class names_and_options_t
 {
 private:
   static bool is_valid_region( const std::string& s )
-  { return s.size() == 2; }
+  {
+    static const std::vector<std::string> REGIONS { "us", "eu", "kr", "tw", "cn" };
+    return s.size() == 2 && range::find( REGIONS, s ) != REGIONS.end();
+  }
 
 public:
   typedef std::runtime_error error;
@@ -401,6 +404,8 @@ public:
       if ( names.size() > 2 )
       {
         region = names[ 0 ];
+        // Lowercase regions, always
+        std::transform( region.begin(), region.end(), region.begin(), tolower );
         server = names[ 1 ];
         names.erase( names.begin(), names.begin() + 2 );
       }
@@ -411,7 +416,8 @@ public:
     }
     if (!is_valid_region( region ))
     {
-      throw std::invalid_argument(fmt::format("Invalid region '{}'.", region));
+      throw std::invalid_argument(
+          fmt::format( "Invalid region '{}', available regions are: us, eu, kr, tw, cn.", region ) );
     }
 
     if ( server.empty() )
@@ -541,95 +547,29 @@ bool parse_guild( sim_t*             sim,
 // parse_fight_style ========================================================
 
 bool parse_fight_style( sim_t*             sim,
-                               const std::string& name,
-                               const std::string& value )
+                        const std::string& /*name*/,
+                        const std::string& value )
 {
-  if ( name != "fight_style" ) return false;
+  static std::vector<std::string> FIGHT_STYLES {
+    "Patchwerk", "Ultraxion", "CleaveAdd", "HelterSkelter", "LightMovement", "HeavyMovement",
+    "HecticAddCleave", "Beastlord", "CastingPatchwerk", "DungeonSlice"
+  };
 
-  if ( util::str_compare_ci( value, "Patchwerk" ) )
-  {
-    sim -> fight_style = "Patchwerk";
-    sim -> raid_events_str.clear();
-  }
-  else if ( util::str_compare_ci( value, "Ultraxion" ) )
-  {
-    sim -> fight_style = "Ultraxion";
-    sim -> max_time    = timespan_t::from_seconds( 366.0 );
-    sim -> fixed_time  = true;
-    sim -> vary_combat_length = 0.0;
-    sim -> raid_events_str =  "flying,first=0,duration=500,cooldown=500";
-    sim -> raid_events_str +=  "/position_switch,first=0,duration=500,cooldown=500";
-    sim -> raid_events_str += "/stun,duration=1.0,first=45.0,period=45.0";
-    sim -> raid_events_str += "/stun,duration=1.0,first=57.0,period=57.0";
-    sim -> raid_events_str += "/damage,first=6.0,period=6.0,last=59.5,amount=44000,type=shadow";
-    sim -> raid_events_str += "/damage,first=60.0,period=5.0,last=119.5,amount=44855,type=shadow";
-    sim -> raid_events_str += "/damage,first=120.0,period=4.0,last=179.5,amount=44855,type=shadow";
-    sim -> raid_events_str += "/damage,first=180.0,period=3.0,last=239.5,amount=44855,type=shadow";
-    sim -> raid_events_str += "/damage,first=240.0,period=2.0,last=299.5,amount=44855,type=shadow";
-    sim -> raid_events_str += "/damage,first=300.0,period=1.0,amount=44855,type=shadow";
-  }
-  else if ( util::str_compare_ci( value, "CleaveAdd" ) || util::str_compare_ci(value, "Cleave_Add" ) )
-  {
-	  sim->fight_style = "CleaveAdd";
-	  sim->raid_events_str = "adds,cooldown=25,duration=13,first_pct=95,count=1";
-  }
-  else if ( util::str_compare_ci( value, "HelterSkelter" ) || util::str_compare_ci( value, "Helter_Skelter" ) )
-  {
-    sim -> fight_style = "HelterSkelter";
-    sim -> raid_events_str = "casting,cooldown=30,duration=3,first=15";
-    sim -> raid_events_str += "/movement,cooldown=30,distance=20";
-    sim -> raid_events_str += "/stun,cooldown=60,duration=2";
-    sim -> raid_events_str += "/invulnerable,cooldown=120,duration=3";
-  }
-  else if ( util::str_compare_ci( value, "LightMovement" ) )
-  {
-    sim -> fight_style = "LightMovement";
-    sim -> raid_events_str = "/movement,players_only=1,first=";
-    sim -> raid_events_str += util::to_string( int( sim -> max_time.total_seconds() * 0.1 ) );
-    sim -> raid_events_str += ",cooldown=85,distance=50,last=";
-    sim -> raid_events_str += util::to_string( int( sim -> max_time.total_seconds() * 0.8 ) );
-  }
-  else if ( util::str_compare_ci( value, "HeavyMovement" ) )
-  {
-	  sim->fight_style = "HeavyMovement";
-	  sim->raid_events_str = "/movement,players_only=1,first=10,cooldown=10,distance=25";
-  }
-  else if ( util::str_compare_ci( value, "HecticAddCleave" ) )
-  {
-    sim -> fight_style = "HecticAddCleave";
+  auto it = range::find_if( FIGHT_STYLES, [ &value ]( const std::string& n ) {
+    return util::str_compare_ci( value, n );
+  } );
 
-    sim -> raid_events_str += "/adds,count=5,first=" + util::to_string( int( sim -> max_time.total_seconds() * 0.05 ) ) + ",cooldown=" + util::to_string( int( sim -> max_time.total_seconds() * 0.075 ) ) + ",duration=" + util::to_string( int( sim -> max_time.total_seconds() * 0.05 ) ) + ",last=" + util::to_string( int( sim -> max_time.total_seconds() * 0.75 ) ); //P1
-
-    sim -> raid_events_str += "/movement,first=" + util::to_string( int( sim -> max_time.total_seconds() * 0.05 ) ) + ",cooldown=" + util::to_string( int( sim -> max_time.total_seconds() * 0.075 ) ) + ",distance=25,last=" + util::to_string( int( sim -> max_time.total_seconds() * 0.75 ) ); //move to new position of adds
-
-    sim -> raid_events_str += "/movement,players_only=1,first=" + util::to_string( int( sim -> max_time.total_seconds() * 0.03 ) ) + ",cooldown=" + util::to_string( int( sim -> max_time.total_seconds() * 0.04 ) ) + ",distance=8"; //move out of stuff
-
-  }
-  else if ( util::str_compare_ci( value, "Beastlord" ) )
+  if ( it == FIGHT_STYLES.end() )
   {
-    sim -> fight_style = "Beastlord";
-    sim -> raid_events_str += "/adds,name=Pack_Beast,count=6,first=15,duration=10,cooldown=30,angle_start=0,angle_end=360,distance=3";
-    sim -> raid_events_str += "/adds,name=Heavy_Spear,count=2,first=15,duration=15,cooldown=20,spawn_x=-15,spawn_y=0,distance=15";
-    sim -> raid_events_str += "/movement,first=13,distance=5,cooldown=20,players_only=1,player_chance=0.1";
+    throw std::invalid_argument( fmt::format( "Unknown fight style {}, available values: {}",
+      value, util::string_join( FIGHT_STYLES ) ) );
+  }
 
-    int beast_duration = static_cast<int>(sim -> max_time.total_seconds() * 0.15);
-    int beast_cooldown = static_cast<int>(sim -> max_time.total_seconds() * 0.25);
-    int beast_cooldown_stddev = std::max(static_cast<int>((beast_duration - beast_cooldown) / 6.0) - 1, 0); // Ensure min cooldown (cd - 6*stddev) is larger than duration
-    sim -> raid_events_str += fmt::format("/adds,name=Beast,count=1,first=10,duration={},cooldown={},last=" + util::to_string( int( sim -> max_time.total_seconds() * 0.65 ) ) + ",duration_stddev=5,cooldown_stddev={}",
-        beast_duration, beast_cooldown, beast_cooldown_stddev);
-  }
-  else if ( util::str_compare_ci( value, "CastingPatchwerk" ) )
-  {
-    sim->fight_style = "CastingPatchwerk";
-    sim->raid_events_str += "/casting,cooldown=500,duration=500";
-  }
-  else
-  {
-    throw std::invalid_argument("Unknown fight style.");
-  }
+  sim->fight_style = *it;
 
   return true;
 }
+
 // parse_override_spell_data ================================================
 
 bool parse_override_spell_data( sim_t*             sim,
@@ -1083,6 +1023,7 @@ struct regen_event_t : public event_t
   }
 };
 
+#ifndef SC_NO_NETWORKING
 /// List of files from which to look for Blizzard API key
 std::vector<std::string> get_api_key_locations()
 {
@@ -1116,7 +1057,7 @@ std::vector<std::string> get_api_key_locations()
 bool validate_api_key( const std::string& key )
 {
   // no better check for now than to measure its length.
-  return key.size() == 32;
+  return key.size() == 65;
 }
 
 /**
@@ -1149,15 +1090,16 @@ std::string get_api_key()
     }
     else
     {
-      std::cerr << "Blizzard API Key from file '" << filename << "' was not properly entered. (Size != 32)" << std::endl;
+      std::cerr << "Blizzard API credentials from file '" << filename << "' were not properly entered. (Size != 65)" << std::endl;
     }
   }
 
-#if defined(SC_DEFAULT_APIKEY)
+#if defined( SC_DEFAULT_APIKEY )
   return std::string(SC_DEFAULT_APIKEY);
-#endif
+#endif /* SC_DEFAULT_APIKEY */
   return std::string();
 }
+#endif /* SC_NO_NETWORKING */
 
 /// Setup a periodic check for Bloodlust
 struct bloodlust_check_t : public event_t
@@ -1213,7 +1155,13 @@ struct compare_dps
 {
   bool operator()( player_t* l, player_t* r ) const
   {
-    return l -> collected_data.dps.mean() > r -> collected_data.dps.mean();
+    double lv = l->collected_data.dps.mean(), rv = r->collected_data.dps.mean();
+    if ( lv == rv )
+    {
+      return l->actor_index < r->actor_index;
+    }
+
+    return lv > rv;
   }
 };
 
@@ -1223,7 +1171,13 @@ struct compare_priority_dps
 {
   bool operator()( player_t* l, player_t* r ) const
   {
-    return l -> collected_data.prioritydps.mean() > r -> collected_data.prioritydps.mean();
+    double lv = l->collected_data.prioritydps.mean(), rv = r->collected_data.prioritydps.mean();
+    if ( lv == rv )
+    {
+      return l->actor_index < r->actor_index;
+    }
+
+    return lv > rv;
   }
 };
 
@@ -1233,8 +1187,20 @@ struct compare_apm
 {
   bool operator()( player_t* l, player_t* r ) const
   {
-    return ( l -> collected_data.fight_length.mean() ? 60.0 * l -> collected_data.executed_foreground_actions.mean() / l -> collected_data.fight_length.mean() : 0 ) >
-      ( r -> collected_data.fight_length.mean() ? 60.0 * r -> collected_data.executed_foreground_actions.mean() / r -> collected_data.fight_length.mean() : 0 );
+    double lv = l->collected_data.fight_length.mean()
+      ? 60.0 * l->collected_data.executed_foreground_actions.mean() / l->collected_data.fight_length.mean()
+      : 0.0;
+
+    double rv = r->collected_data.fight_length.mean()
+      ? 60.0 * r->collected_data.executed_foreground_actions.mean() / r->collected_data.fight_length.mean()
+      : 0.0;
+
+    if ( lv == rv )
+    {
+      return l->actor_index < r->actor_index;
+    }
+
+    return lv > rv;
   }
 };
 
@@ -1244,7 +1210,13 @@ struct compare_hps
 {
   bool operator()( player_t* l, player_t* r ) const
   {
-    return l -> collected_data.hps.mean() > r -> collected_data.hps.mean();
+    double lv = l->collected_data.hps.mean(), rv = r->collected_data.hps.mean();
+    if ( lv == rv )
+    {
+      return l->actor_index < r->actor_index;
+    }
+
+    return lv > rv;
   }
 };
 
@@ -1254,7 +1226,14 @@ struct compare_hps_plus_aps
 {
   bool operator()( player_t* l, player_t* r ) const
   {
-    return ( l -> collected_data.hps.mean() + l -> collected_data.aps.mean() ) > ( r -> collected_data.hps.mean() + r -> collected_data.aps.mean() );
+    double lv = l->collected_data.hps.mean() + l->collected_data.aps.mean(),
+           rv = r->collected_data.hps.mean() + r->collected_data.aps.mean();
+    if ( lv == rv )
+    {
+      return l->actor_index < r->actor_index;
+    }
+
+    return lv > rv;
   }
 };
 
@@ -1264,7 +1243,13 @@ struct compare_dtps
 {
   bool operator()( player_t* l, player_t* r ) const
   {
-    return l -> collected_data.dtps.mean() < r -> collected_data.dtps.mean();
+    double lv = l->collected_data.dtps.mean(), rv = r->collected_data.dtps.mean();
+    if ( lv == rv )
+    {
+      return l->actor_index < r->actor_index;
+    }
+
+    return lv > rv;
   }
 };
 
@@ -1274,7 +1259,14 @@ struct compare_tmi
 {
   bool operator()( player_t* l, player_t* r ) const
   {
-    return l -> collected_data.theck_meloree_index.mean() < r -> collected_data.theck_meloree_index.mean();
+    double lv = l->collected_data.theck_meloree_index.mean(),
+           rv = r->collected_data.theck_meloree_index.mean();
+    if ( lv == rv )
+    {
+      return l->actor_index < r->actor_index;
+    }
+
+    return lv > rv;
   }
 };
 
@@ -1378,7 +1370,7 @@ sim_t::sim_t() :
   active_enemies( 0 ), active_allies( 0 ),
   _rng(), seed( 0 ), deterministic( 0 ), strict_work_queue( 0 ),
   average_range( true ), average_gauss( false ),
-  fight_style( "Patchwerk" ), add_waves( 0 ), overrides( overrides_t() ),
+  fight_style(), add_waves( 0 ), overrides( overrides_t() ),
   default_aura_delay( timespan_t::from_millis( 30 ) ),
   default_aura_delay_stddev( timespan_t::from_millis( 5 ) ),
   azerite_status( AZERITE_ENABLED ),
@@ -1409,8 +1401,11 @@ sim_t::sim_t() :
   solo_raid( false ),
   global_item_upgrade_level( 0 ),
   maximize_reporting( false ),
+#ifndef SC_NO_NETWORKING
   apikey( get_api_key() ),
+#endif
   distance_targeting_enabled( false ),
+  ignore_invulnerable_targets( false ),
   enable_dps_healing( false ),
   scaling_normalized( 1.0 ),
   // Multi-Threading
@@ -1515,8 +1510,20 @@ double sim_t::iteration_time_adjust() const
   if ( current_iteration == 0 )
     return 1.0;
 
-  auto progress = work_queue -> progress();
-  return 1.0 + vary_combat_length * ( ( current_iteration % 2 ) ? 1 : -1 ) * progress.pct();
+  // Approximate uniform distribution for fight lengths through randomization when target error is
+  // used. Will generate more fair fight length distribution when reasonable (<0.5) target_error
+  // values are chosen, and removes issues with pathological cases where high values are used (high
+  // enough for analyze_error_interval to bound the number of iterations done, instead of the
+  // target_error).
+  if ( target_error != 0 )
+  {
+    return rng().range( 1.0 - vary_combat_length, 1.0 + vary_combat_length );
+  }
+  else
+  {
+    auto progress = work_queue -> progress();
+    return 1.0 + vary_combat_length * ( ( current_iteration % 2 ) ? 1 : -1 ) * progress.pct();
+  }
 }
 
 // sim_t::expected_max_time =================================================
@@ -1653,7 +1660,10 @@ void sim_t::reset()
     buff -> reset();
 
   for ( auto& target : target_list )
+  {
     target -> reset();
+    range::for_each( target->pet_list, []( pet_t* pet ) { pet->reset(); } );
+  }
 
   if ( single_actor_batch )
   {
@@ -1729,6 +1739,7 @@ void sim_t::combat_begin()
 
   if ( overrides.arcane_intellect ) auras.arcane_intellect -> override_buff();
   if ( overrides.battle_shout ) auras.battle_shout->override_buff();
+  if ( overrides.power_word_fortitude ) auras.power_word_fortitude -> override_buff();
 
   for ( player_e i = PLAYER_NONE; i < PLAYER_MAX; ++i )
   {
@@ -1912,10 +1923,12 @@ void sim_t::datacollection_end()
   total_absorb.add( iteration_absorb );
   raid_aps.add( current_time() != timespan_t::zero() ? iteration_absorb / current_time().total_seconds() : 0 );
 
-  if ( deterministic && report_iteration_data > 0 && current_iteration > 0 && current_time() > timespan_t::zero() )
+  if ( deterministic && report_iteration_data > 0 && current_iteration > 0 &&
+       current_time() > timespan_t::zero() )
   {
     // TODO: Metric should be selectable
-    iteration_data_entry_t entry( iteration_dmg / current_time().total_seconds(), seed, current_iteration );
+    iteration_data_entry_t entry( iteration_dmg / current_time().total_seconds(),
+        current_time().total_seconds(), seed, current_iteration );
     for ( size_t i = 0, end = target_list.size(); i < end; ++i )
     {
       const player_t* t = target_list[ i ];
@@ -2084,6 +2097,134 @@ void sim_t::check_actors()
   if ( zero_dds && ! debug )
   {
     fixed_time = true;
+  }
+}
+
+/**
+ * @brief configure fight style
+ *
+ * Parses fight style information into specific simulator defines. Performed as a separate
+ * initialization step (early) in the simulator init process to avoid positional dependencies
+ * between options (first and foremost, the max_time option).
+ *
+ * Note that there are side-effects of this, namely that where fight styles define other options
+ * (e.g., Ultraxion), those can no longer be overwritten on the command line.
+ */
+void sim_t::init_fight_style()
+{
+  if ( util::str_compare_ci( fight_style, "Patchwerk" ) )
+  {
+    raid_events_str.clear();
+  }
+  else if ( util::str_compare_ci( fight_style, "Ultraxion" ) )
+  {
+    max_time    = timespan_t::from_seconds( 366.0 );
+    fixed_time  = true;
+    vary_combat_length = 0.0;
+    raid_events_str += "/flying,first=0,duration=500,cooldown=500";
+    raid_events_str += "/position_switch,first=0,duration=500,cooldown=500";
+    raid_events_str += "/stun,duration=1.0,first=45.0,period=45.0";
+    raid_events_str += "/stun,duration=1.0,first=57.0,period=57.0";
+    raid_events_str += "/damage,first=6.0,period=6.0,last=59.5,amount=44000,type=shadow";
+    raid_events_str += "/damage,first=60.0,period=5.0,last=119.5,amount=44855,type=shadow";
+    raid_events_str += "/damage,first=120.0,period=4.0,last=179.5,amount=44855,type=shadow";
+    raid_events_str += "/damage,first=180.0,period=3.0,last=239.5,amount=44855,type=shadow";
+    raid_events_str += "/damage,first=240.0,period=2.0,last=299.5,amount=44855,type=shadow";
+    raid_events_str += "/damage,first=300.0,period=1.0,amount=44855,type=shadow";
+  }
+  else if ( util::str_compare_ci( fight_style, "CleaveAdd" ) || util::str_compare_ci(fight_style, "Cleave_Add" ) )
+  {
+    auto first_and_duration = static_cast<unsigned>( max_time.total_seconds() * 0.05 );
+    auto cooldown = static_cast<unsigned>( max_time.total_seconds() * 0.075 );
+    auto last = static_cast<unsigned>( max_time.total_seconds() * 0.90 );
+    
+    raid_events_str += fmt::format( "/adds,count=1,first={},cooldown={},duration={},last={}",
+                                     first_and_duration, cooldown, first_and_duration, last );
+  }
+  else if ( util::str_compare_ci( fight_style, "HelterSkelter" ) || util::str_compare_ci( fight_style, "Helter_Skelter" ) )
+  {
+    raid_events_str += "/casting,cooldown=30,duration=3,first=15";
+    raid_events_str += "/movement,cooldown=30,distance=20";
+    raid_events_str += "/stun,cooldown=60,duration=2";
+    raid_events_str += "/invulnerable,cooldown=120,duration=3";
+  }
+  else if ( util::str_compare_ci( fight_style, "LightMovement" ) )
+  {
+    auto first_time = static_cast<unsigned>( max_time.total_seconds() * 0.1 );
+    auto last_time = static_cast<unsigned>( max_time.total_seconds() * 0.8 );
+
+    raid_events_str += fmt::format( "/movement,players_only=1,cooldown=85,distance=50,first={},last={}",
+                                   first_time, last_time );
+  }
+  else if ( util::str_compare_ci( fight_style, "HeavyMovement" ) )
+  {
+    raid_events_str += "/movement,players_only=1,first=10,cooldown=10,distance=25";
+  }
+  else if ( util::str_compare_ci( fight_style, "HecticAddCleave" ) )
+  {
+    // Phase 1 - Adds and move into position to fight adds
+    auto first_and_duration = std::max( static_cast<unsigned>( max_time.total_seconds() * 0.05 ), 1u );
+    auto cooldown = std::max( static_cast<unsigned>( max_time.total_seconds() * 0.075 ), 1u );
+    auto last = static_cast<unsigned>( max_time.total_seconds() * 0.75 );
+
+    raid_events_str += fmt::format( "/adds,count=5,first={},cooldown={},duration={},last={}",
+                                    first_and_duration, cooldown, first_and_duration, last );
+
+    raid_events_str += fmt::format( "/movement,distance=25,first={},cooldown={},last={}",
+                                    first_and_duration, cooldown, last );
+
+    // Phase2 - Move out of stuff
+    auto first2 = static_cast<unsigned>( max_time.total_seconds() * 0.03 );
+    auto cooldown2 = std::max( static_cast<unsigned>( max_time.total_seconds() * 0.04 ), 1u );
+
+    raid_events_str += fmt::format( "/movement,players_only=1,distance=8,first={},cooldown={}",
+                                    first2, cooldown2 );
+  }
+  else if ( util::str_compare_ci( fight_style, "Beastlord" ) )
+  {
+    raid_events_str += "/adds,name=Pack_Beast,count=6,"
+                       "first=15,duration=10,cooldown=30,angle_start=0,angle_end=360,distance=3";
+    raid_events_str += "/adds,name=Heavy_Spear,count=2,"
+                       "first=15,duration=15,cooldown=20,spawn_x=-15,spawn_y=0,distance=15";
+    raid_events_str += "/movement,first=13,distance=5,cooldown=20,players_only=1,player_chance=0.1";
+
+    auto beast_duration = static_cast<int>( max_time.total_seconds() * 0.15 );
+    auto beast_cooldown = static_cast<int>( max_time.total_seconds() * 0.25 );
+    // Ensure min cooldown (cd - 6*stddev) is larger than duration
+    auto beast_cooldown_stddev = std::max(
+        static_cast<int>( ( beast_duration - beast_cooldown ) / 6.0 ) - 1, 0 );
+    auto beast_last = static_cast<unsigned>( max_time.total_seconds() * 0.65 );
+
+    raid_events_str += fmt::format( "/adds,name=Beast,count=1,first=10,duration_stddev=5,"
+                                    "duration={},cooldown={},cooldown_stddev={},last={}",
+                                    beast_duration, beast_cooldown, beast_cooldown_stddev,
+                                    beast_last );
+  }
+  else if ( util::str_compare_ci( fight_style, "CastingPatchwerk" ) )
+  {
+    raid_events_str += "/casting,cooldown=500,duration=500";
+  }
+  else if ( util::str_compare_ci( fight_style, "DungeonSlice" ) )
+  { //Based on the Hero Dungeon setup
+    max_time                       = timespan_t::from_seconds( 360.0 );
+    //Disables all raidbuffs, except those provided by scrolls or the character itself.
+    optimal_raid                   = 0;
+    overrides.arcane_intellect     = 1;
+    overrides.battle_shout         = 1;
+    overrides.power_word_fortitude = 1;
+    overrides.bloodlust            = 1;
+
+    ignore_invulnerable_targets = true;
+
+    raid_events_str +=
+        "/invulnerable,cooldown=500,duration=500,retarget=1"
+        "/adds,name=Boss,count=1,cooldown=500,duration=140,duration_stddev=2"
+        "/adds,name=SmallAdd,count=5,count_range=1,first=140,cooldown=45,duration=15,duration_stddev=2"
+        "/adds,name=BigAdd,count=2,count_range=1,first=155,cooldown=45,duration=30,duration_stddev=2";
+  }
+  else
+  {
+    fight_style = "Patchwerk";
   }
 }
 
@@ -2352,7 +2493,7 @@ void sim_t::init()
   }
   else if ( timewalk > 0 )
   {
-    if ( scale_to_itemlevel != -1 )
+    if ( scale_to_itemlevel == -1 )
     {
       switch ( timewalk )
       {
@@ -2374,13 +2515,17 @@ void sim_t::init()
     }
   }
 
-  auras.arcane_intellect = buff_creator_t( this, "arcane_intellect", dbc::find_spell( this, 1459 ) )
-                           .default_value( dbc::find_spell( this, 1459 ) -> effectN( 1 ).percent() )
-                           .add_invalidate( CACHE_INTELLECT );
+  auras.arcane_intellect = make_buff( this, "arcane_intellect", dbc::find_spell( this, 1459 ) )
+                           ->set_default_value( dbc::find_spell( this, 1459 ) -> effectN( 1 ).percent() )
+                           ->add_invalidate( CACHE_INTELLECT );
 
-  auras.battle_shout = buff_creator_t( this, "battle_shout", dbc::find_spell( this, 6673 ) )
-                        .default_value( dbc::find_spell( this, 6673 )->effectN( 1 ).percent() )
-                        .add_invalidate( CACHE_ATTACK_POWER );
+  auras.battle_shout = make_buff( this, "battle_shout", dbc::find_spell( this, 6673 ) )
+                        ->set_default_value( dbc::find_spell( this, 6673 )->effectN( 1 ).percent() )
+                        ->add_invalidate( CACHE_ATTACK_POWER );
+
+  auras.power_word_fortitude = make_buff( this, "power_word_fortitude", dbc::find_spell( this, 21562 ) )
+                           ->set_default_value( dbc::find_spell( this, 21562 ) -> effectN( 1 ).percent() )
+                           ->add_invalidate( CACHE_STAMINA );
 
   // Find Already defined target, otherwise create a new one.
   if ( debug )
@@ -2445,6 +2590,10 @@ void sim_t::init()
     }
   }
 
+  // Fight style initialization must be performed before raid event initialization, since fight
+  // styles may define raid events.
+  init_fight_style();
+
   raid_event_t::init( this );
 
   // Initialize actors
@@ -2497,7 +2646,12 @@ void sim_t::init()
     }
   }
 
-  profilesets.initialize( this );
+  // If save= option is used, don't bother initializing profilesets as the main thread is going to
+  // exit in any case
+  if ( active_player && active_player->report_information.save_str.empty() )
+  {
+    profilesets.initialize( this );
+  }
 
   initialized = true;
 
@@ -2562,7 +2716,7 @@ void sim_t::analyze_iteration_data()
     return;
   }
 
-  std::sort( iteration_data.begin(), iteration_data.end(), iteration_data_cmp_r );
+  range::sort( iteration_data, iteration_data_cmp_r );
 
   size_t min_entries = ( min_report_iteration_data == -1 ) ? 5 : static_cast<size_t>( min_report_iteration_data );
   double n_pct = report_iteration_data / ( report_iteration_data > 1 ? 100.0 : 1.0 );
@@ -2940,6 +3094,7 @@ void sim_t::use_optimal_buffs_and_debuffs( int value )
 
   overrides.arcane_intellect        = optimal_raid;
   overrides.battle_shout            = optimal_raid;
+  overrides.power_word_fortitude    = optimal_raid;
 
   overrides.chaos_brand             = optimal_raid;
   overrides.mystic_touch            = optimal_raid;
@@ -2971,6 +3126,9 @@ expr_t* sim_t::create_expression( const std::string& name_str )
   if ( name_str == "time" )
     return make_ref_expr( name_str, event_mgr.current_time );
 
+  if ( util::str_compare_ci( name_str, "expected_combat_length" ) )
+    return make_ref_expr( name_str, expected_iteration_time );
+
   if ( name_str == "channel_lag" )
     return expr_t::create_constant( name_str, channel_lag );
 
@@ -2981,7 +3139,16 @@ expr_t* sim_t::create_expression( const std::string& name_str )
     return expr_t::create_constant( name_str, enemy_targets );
 
   if ( util::str_compare_ci( name_str, "active_enemies" ) )
-    return make_ref_expr( name_str, active_enemies );
+  {
+    if ( target_list.size() == 1u && !raid_event_t::has_raid_event( this, "adds" ) )
+    {
+      return expr_t::create_constant( name_str, 1.0 );
+    }
+    else
+    {
+      return make_ref_expr( name_str, active_enemies );
+    }
+  }
 
   if ( util::str_compare_ci( name_str, "active_allies" ) )
     return make_ref_expr( name_str, active_allies );
@@ -3168,6 +3335,7 @@ void sim_t::create_options()
   add_option( opt_func( "optimal_raid", parse_optimal_raid ) );
   add_option( opt_int( "override.arcane_intellect", overrides.arcane_intellect ) );
   add_option( opt_int( "override.battle_shout", overrides.battle_shout ) );
+  add_option( opt_int( "override.power_word_fortitude", overrides.power_word_fortitude ) );
   add_option( opt_int( "override.chaos_brand", overrides.chaos_brand ) );
   add_option( opt_int( "override.mystic_touch", overrides.mystic_touch ) );
   add_option( opt_int( "override.mortal_wounds", overrides.mortal_wounds ) );
@@ -3325,7 +3493,9 @@ void sim_t::create_options()
   add_option( opt_bool( "monitor_cpu", event_mgr.monitor_cpu ) );
   add_option( opt_func( "maximize_reporting", parse_maximize_reporting ) );
   add_option( opt_string( "apikey", apikey ) );
+  add_option( opt_string( "apitoken", user_apitoken ) );
   add_option( opt_bool( "distance_targeting_enabled", distance_targeting_enabled ) );
+  add_option( opt_bool( "ignore_invulnerable_targets", ignore_invulnerable_targets ) );
   add_option( opt_bool( "enable_dps_healing", enable_dps_healing ) );
   add_option( opt_float( "scaling_normalized", scaling_normalized ) );
   add_option( opt_int( "global_item_upgrade_level", global_item_upgrade_level ) );
@@ -3344,7 +3514,6 @@ void sim_t::create_options()
   add_option( opt_int( "legion.infernal_cinders_users", legion_opts.infernal_cinders_users, 1, 20 ) );
   add_option( opt_int( "legion.engine_of_eradication_orbs", legion_opts.engine_of_eradication_orbs, 0, 4 ) );
   add_option( opt_int( "legion.void_stalkers_contract_targets", legion_opts.void_stalkers_contract_targets ) );
-  add_option( opt_bool( "legion.feast_as_dps", legion_opts.lavish_feast_as_dps ) );
   add_option( opt_float( "legion.specter_of_betrayal_overlap", legion_opts.specter_of_betrayal_overlap, 0, 1 ) );
   add_option( opt_float( "legion.archimondes_hatred_reborn_damage", legion_opts.archimondes_hatred_reborn_damage, 0, 1 ) );
   add_option( opt_string( "legion.pantheon_trinket_users", legion_opts.pantheon_trinket_users ) );
@@ -3392,6 +3561,37 @@ void sim_t::create_options()
     }
     return true;
   } ) );
+
+  add_option( opt_uint( "bfa.jes_howler_allies", bfa_opts.jes_howler_allies, 0, 4 ) );
+  add_option( opt_float( "bfa.secrets_of_the_deep_chance",
+        bfa_opts.secrets_of_the_deep_chance, 0, 1 ) );
+  add_option( opt_float( "bfa.secrets_of_the_deep_collect_chance",
+        bfa_opts.secrets_of_the_deep_collect_chance, 0, 1 ) );
+  add_option( opt_int( "bfa.initial_archive_of_the_titans_stacks",
+        bfa_opts.initial_archive_of_the_titans_stacks, 0, 20 ) );
+  add_option( opt_int( "bfa.reorigination_array_stacks",
+        bfa_opts.reorigination_array_stacks, 0, 10 ) );
+  add_option( opt_bool( "bfa.reorigination_array_ignore_scale_factors",
+        bfa_opts.reorigination_array_ignore_scale_factors ) );
+  add_option( opt_float( "bfa.seductive_power_pickup_chance",
+        bfa_opts.seductive_power_pickup_chance, 0.0, 1.0 ) );
+  add_option( opt_int( "bfa.initial_seductive_power_stacks",
+        bfa_opts.initial_seductive_power_stacks, 0, 5 ) );
+  add_option( opt_bool( "bfa.randomize_oscillation",
+        bfa_opts.randomize_oscillation ) );
+  add_option( opt_bool( "bfa.auto_oscillating_overload",
+        bfa_opts.auto_oscillating_overload ) );
+  add_option( opt_bool( "bfa.zuldazar",
+        bfa_opts.zuldazar ) );
+  add_option( opt_timespan( "bfa.covenant_period",
+        bfa_opts.covenant_period, 1_ms, timespan_t::max() ) );
+  add_option( opt_float( "bfa.covenant_chance",
+        bfa_opts.covenant_chance, 0.0, 1.0 ) );
+  add_option( opt_float( "bfa.incandescent_sliver_chance",
+        bfa_opts.incandescent_sliver_chance, 0.0, 1.0 ) );
+
+  // applies to: "lavish_suramar_feast", battle for azeroth feasts
+  add_option( opt_bool( "feast_as_dps", feast_as_dps ) );
 }
 
 // sim_t::parse_option ======================================================
@@ -3630,7 +3830,7 @@ void sim_t::detailed_progress( std::string* detail, int current_iterations, int 
   if ( detail )
   {
     detail -> clear();
-    *detail = fmt::format("fooo {:d}/{:d}", current_iterations, total_iterations );
+    *detail = fmt::format("Iteration {:d}/{:d}", current_iterations, total_iterations );
   }
 }
 

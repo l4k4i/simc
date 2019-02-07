@@ -45,7 +45,7 @@ const sdata_field_t _effect_data_fields[] =
   { SD_TYPE_UNSIGNED, "index",          O_SED( _index )           },
   { SD_TYPE_INT,      "type",           O_SED( _type )            },
   { SD_TYPE_INT,      "sub_type" ,      O_SED( _subtype )         },
-  { SD_TYPE_DOUBLE,   "m_average",      O_SED( _m_avg )           },
+  { SD_TYPE_DOUBLE,   "m_coefficient",  O_SED( _m_coeff )         },
   { SD_TYPE_DOUBLE,   "m_delta",        O_SED( _m_delta )         },
   { SD_TYPE_DOUBLE,   "m_bonus" ,       O_SED( _m_unk )           },
   { SD_TYPE_DOUBLE,   "coefficient",    O_SED( _sp_coeff )        },
@@ -64,7 +64,8 @@ const sdata_field_t _effect_data_fields[] =
   { SD_TYPE_UNSIGNED, "chain_target",   O_SED( _chain_target )    },
   { SD_TYPE_UNSIGNED, "target_1",       O_SED( _targeting_1 )     },
   { SD_TYPE_UNSIGNED, "target_2",       O_SED( _targeting_2 )     },
-  { SD_TYPE_DOUBLE,   "m_value",        O_SED( _m_value )         }
+  { SD_TYPE_DOUBLE,   "m_value",        O_SED( _m_value )         },
+  { SD_TYPE_DOUBLE,   "pvp_coefficient",O_SED( _pvp_coeff )       }
 };
 
 #define O_SD(f) offsetof( spell_data_t, f )
@@ -110,6 +111,7 @@ const sdata_field_t _spell_data_fields[] =
   { SD_TYPE_STR,      "desc_vars",         O_SD( _desc_vars )              },
   { SD_TYPE_STR,      "rank",              O_SD( _rank_str )               },
   { SD_TYPE_UNSIGNED, "req_max_level",     O_SD( _req_max_level )          },
+  { SD_TYPE_UNSIGNED, "dmg_class",         O_SD( _dmg_class )              }
 };
 
 const std::string _class_strings[] =
@@ -963,6 +965,37 @@ struct spell_race_expr_t : public spell_list_expr_t
   }
 };
 
+struct spell_flag_expr_t : public spell_list_expr_t
+{
+  spell_flag_expr_t( sim_t* sim, expr_data_e type ) : spell_list_expr_t( sim, "flag", type ) { }
+
+  virtual std::vector<uint32_t> operator==( const spell_data_expr_t& other ) override
+  {
+    std::vector<uint32_t> res;
+
+    // Only for spells
+    if ( data_type == DATA_EFFECT || data_type == DATA_TALENT )
+      return res;
+
+    // Numbered attributes only
+    if ( other.result_tok != expression::TOK_NUM )
+      return res;
+
+    for ( const auto& result_spell : result_spell_list )
+    {
+      const spell_data_t* spell = sim -> dbc.spell( result_spell );
+
+      if ( ! spell )
+        continue;
+
+      if ( spell -> class_flag( other.result_num ) )
+        res.push_back( result_spell );
+    }
+
+    return res;
+  }
+};
+
 struct spell_attribute_expr_t : public spell_list_expr_t
 {
   spell_attribute_expr_t( sim_t* sim, expr_data_e type ) : spell_list_expr_t( sim, "attribute", type ) { }
@@ -1135,6 +1168,8 @@ spell_data_expr_t* spell_data_expr_t::create_spell_expression( sim_t* sim, const
     return new spell_race_expr_t( sim, data_type );
   else if ( util::str_compare_ci( splits[ 1 ], "attribute" ) )
     return new spell_attribute_expr_t( sim, data_type );
+  else if ( data_type != DATA_TALENT && util::str_compare_ci( splits[ 1 ], "flag" ) )
+    return new spell_flag_expr_t( sim, data_type );
   else if ( data_type != DATA_TALENT && util::str_compare_ci( splits[ 1 ], "school" ) )
     return new spell_school_expr_t( sim, data_type );
 

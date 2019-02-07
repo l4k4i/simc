@@ -93,6 +93,14 @@ struct enemy_t : public player_t
     {
       initial_health = fixed_health;
     }
+
+    this->default_target = this->target = sim->player_no_pet_list[ sim->current_index ];
+    range::for_each( action_list, [ this ]( action_t* action ) {
+        if ( action->harmful )
+        {
+          action->default_target = action->target = sim->player_no_pet_list[ sim->current_index ];
+        }
+    } );
   }
 
   virtual bool taunt( player_t* source ) override;
@@ -156,7 +164,7 @@ struct enemy_action_t : public ACTION_TYPE
     return filtered_options;
   }
 
-  virtual void init()
+  void init() override
   {
     action_type_t::init();
 
@@ -194,7 +202,7 @@ struct enemy_action_t : public ACTION_TYPE
       this -> base_dd_max = this -> base_dd_min;
   }
 
-  virtual size_t available_targets( std::vector< player_t* >& tl ) const
+  size_t available_targets( std::vector< player_t* >& tl ) const override
   {
     // TODO: This does not work for heals at all, as it presumes enemies in the
     // actor list.
@@ -234,7 +242,7 @@ struct enemy_action_t : public ACTION_TYPE
     return tl.size();
   }
 
-  double calculate_direct_amount( action_state_t* s ) const
+  double calculate_direct_amount( action_state_t* s ) const override
   {
     // force boss attack size to vary regardless of whether the sim itself does
     int previous_average_range_state = this -> sim -> average_range;
@@ -247,7 +255,7 @@ struct enemy_action_t : public ACTION_TYPE
     return amount;
   }
 
-  void impact( action_state_t* s )
+  void impact( action_state_t* s ) override
   {
     if ( apply_debuff && num_debuff_stacks >= 0 )
       this -> target -> debuffs.damage_taken -> trigger( num_debuff_stacks );
@@ -257,7 +265,7 @@ struct enemy_action_t : public ACTION_TYPE
     action_type_t::impact( s );
   }
 
-  void tick( dot_t* d )
+  void tick( dot_t* d ) override
   {
     if ( apply_debuff && num_debuff_stacks >= 0 )
       this -> target -> debuffs.damage_taken -> trigger( num_debuff_stacks );
@@ -265,6 +273,17 @@ struct enemy_action_t : public ACTION_TYPE
       this -> target -> debuffs.damage_taken -> decrement( - num_debuff_stacks );
 
     action_type_t::tick( d );
+  }
+
+  bool ready() override
+  {
+    if ( this->sim->single_actor_batch == 1 &&
+         this->target->primary_role() != ROLE_TANK )
+    {
+      return false;
+    }
+
+    return action_type_t::ready();
   }
 };
 
@@ -323,7 +342,7 @@ struct enemy_action_driver_t : public CHILD_ACTION_TYPE
       this -> background = true;
   }
 
-  virtual void schedule_execute( action_state_t* s )
+  void schedule_execute( action_state_t* s ) override
   {
     // first, execute on the primary target
     child_action_type_t::schedule_execute( s );
@@ -363,6 +382,16 @@ struct enemy_action_driver_t : public CHILD_ACTION_TYPE
     }
   }
 
+  bool ready() override
+  {
+    if ( this->sim->single_actor_batch == 1 &&
+         this->target->primary_role() != ROLE_TANK )
+    {
+      return false;
+    }
+
+    return child_action_type_t::ready();
+  }
 };
 
 // Melee ====================================================================
@@ -500,6 +529,7 @@ struct auto_attack_t : public enemy_action_t<attack_t>
   virtual bool ready() override
   {
     if ( player -> is_moving() || ! player -> main_hand_attack ) return false;
+    if ( !base_t::ready() ) return false;
     return( player -> main_hand_attack -> execute_event == nullptr ); // not swinging
   }
 };
@@ -1236,8 +1266,52 @@ void enemy_t::init_defense()
     double& a = initial.stats.armor;
 
     // a wild equation appears. It's super effective.
+    /*
     switch ( level() )
     {
+      case 1: a = 36; break;
+      case 2: a = 46; break;
+      case 3: a = 51; break;
+      case 4: a = 54; break;
+      case 5: a = 57; break;
+      case 6: a = 64; break;
+      case 7: a = 71; break;
+      case 8: a = 84; break;
+      case 9: a = 90; break;
+      case 10: a = 93; break;
+      case 11: a = 97; break;
+      case 12: a = 104; break;
+      case 13: a = 117; break;
+      case 14: a = 129; break;
+      case 15: a = 131; break;
+      case 16: a = 138; break;
+      case 17: a = 141; break;
+      case 18: a = 144; break;
+      case 19: a = 145; break;
+      case 20: a = 146; break;
+      case 21: a = 160; break;
+      case 22: a = 173; break;
+      case 23: a = 185; break;
+      case 24: a = 191; break;
+      case 25: a = 201; break;
+      case 26: a = 208; break;
+      case 27: a = 214; break;
+      case 28: a = 219; break;
+      case 29: a = 220; break;
+      case 30: a = 234; break;
+      case 31: a = 240; break;
+      case 32: a = 252; break;
+      case 33: a = 258; break;
+      case 34: a = 267; break;
+      case 35: a = 276; break;
+      case 36: a = 279; break;
+      case 37: a = 284; break;
+      case 38: a = 295; break;
+      case 39: a = 304; break;
+      case 40: a = 309; break;
+      case 41: a = 313; break;
+      case 42: a = 318; break;
+      case 43: a = 325; break;
       case 90: a = 794; break; // checked
       case 91: a = 504; break;
       case 92: a = 571; break;
@@ -1274,6 +1348,8 @@ void enemy_t::init_defense()
       case 123: a = 3336; break; // checked
       default: a = std::floor(0.006464588162215 * std::exp(0.123782410252464 * level()) + 0.5); break;
     }
+    */
+    a = dbc.npc_armor_value( level() );
   }
 
   // for future reference, the equations above fit the given values
@@ -1312,7 +1388,7 @@ void enemy_t::create_buffs()
   player_t::create_buffs();
 
   for ( unsigned int i = 1; i <= 10; ++ i )
-    buffs_health_decades.push_back( buff_creator_t( this, "Health Decade (" + util::to_string( ( i - 1 ) * 10 ) + " - " + util::to_string( i * 10 ) + ")" ) );
+    buffs_health_decades.push_back( make_buff( this, "Health Decade (" + util::to_string( ( i - 1 ) * 10 ) + " - " + util::to_string( i * 10 ) + ")" ) );
 }
 
 // enemy_t::init_resources ==================================================

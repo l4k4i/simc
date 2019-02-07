@@ -9,7 +9,7 @@ OUTPATH=`dirname $PWD`/engine/dbc/generated
 BATCH_FILE=live.conf
 
 PTR=
-if [ "$1" == "ptr" ]; then
+if [ "$1" = "ptr" ]; then
     PTR=" --prefix=ptr"
     BATCH_FILE=ptr.conf
     shift
@@ -37,5 +37,5 @@ if [ ! -d ${INPUT} ]; then
   exit 1
 fi
 
-./dbc_extract.py ${CACHE} -p $DBCINPUT -b $BUILD $PTR -t output ${BATCH_FILE}
 ./dbc_extract.py          -p $GTINPUT  -b $BUILD $PTR -t scale  -o $OUTPATH/sc_scale_data${PTR:+_ptr}.inc
+./dbc_extract.py ${CACHE} -p $DBCINPUT -b $BUILD $PTR -t output ${BATCH_FILE}

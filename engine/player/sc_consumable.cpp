@@ -357,8 +357,10 @@ struct dbc_consumable_base_t : public action_t
 
     for ( const auto& spell_id : item_data -> id_spell )
     {
-      auto ptr = player -> find_spell( spell_id );
-      if ( ptr -> id() == as<unsigned>( spell_id ) )
+      // Note, bypasses level check from the spell itself, since it seems some consumable spells are
+      // flagged higher level than the actual food they are in.
+      auto ptr = dbc::find_spell( player, spell_id );
+      if ( ptr && ptr -> id() == as<unsigned>( spell_id ) )
       {
         return ptr;
       }
@@ -664,10 +666,11 @@ struct augmentation_t : public dbc_consumable_base_t
   // Custom driver for now, we don't really want to include the item data for now
   const spell_data_t* driver() const override
   {
-    if      ( util::str_in_str_ci( consumable_name, "defiled" ) ) return player -> find_spell( 224001 );
-    else if ( util::str_in_str_ci( consumable_name, "focus"   ) ) return player -> find_spell( 175457 );
-    else if ( util::str_in_str_ci( consumable_name, "hyper"   ) ) return player -> find_spell( 175456 );
-    else if ( util::str_in_str_ci( consumable_name, "stout"   ) ) return player -> find_spell( 175439 );
+    if      ( util::str_in_str_ci( consumable_name, "defiled" ) ) return player->find_spell( 224001 );
+    else if ( util::str_in_str_ci( consumable_name, "focus"   ) ) return player->find_spell( 175457 );
+    else if ( util::str_in_str_ci( consumable_name, "hyper"   ) ) return player->find_spell( 175456 );
+    else if ( util::str_in_str_ci( consumable_name, "stout"   ) ) return player->find_spell( 175439 );
+    else if ( util::str_in_str_ci( consumable_name, "battle_scarred" ) ) return player->find_spell( 270058 );
     else return spell_data_t::not_found();
   }
 
@@ -829,9 +832,10 @@ struct food_t : public dbc_consumable_base_t
 };
 
 const std::map<std::string, unsigned> food_t::__map = {
-  { "felmouth_frenzy", 188534 },
-  { "lemon_herb_filet", 185736 },
-  { "sugarcrusted_fish_feast", 185736 },
+  { "seafood_magnifique_feast",  87545 },
+  { "felmouth_frenzy",          188534 },
+  { "lemon_herb_filet",         185736 },
+  { "sugarcrusted_fish_feast",  185736 },
 };
 
 } // END UNNAMED NAMESPACE

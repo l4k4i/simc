@@ -8,6 +8,7 @@ except Exception as error:
     print('ERROR: %s, dbc_extract.py requires the Python bitarray (https://pypi.python.org/pypi/bitarray) package to function' % error, file = sys.stderr)
     sys.exit(1)
 
+import dbc
 from dbc.data import initialize_data_model
 from dbc.db import DataStore
 from dbc.file import DBCFile, HotfixFile
@@ -17,6 +18,17 @@ from dbc.config import Config
 def parse_fields(value):
     return [ x.strip() for x in value.split(',') ]
 
+def parse_version(value):
+    try:
+        return dbc.WowVersion(value)
+    except ValueError as e:
+        # User may have given just a build number, try a workaround and warn
+        if value.isdigit():
+            logging.warn('Presuming -b input "{}" as a build number for World of Warcraft 8.0.1, this will become an error in 8.1.0'.format(
+                value))
+            return dbc.WowVersion('8.0.1.{}'.format(value))
+        raise argparse.ArgumentTypeError(e)
+
 logging.basicConfig(level = logging.INFO,
         datefmt = '%Y-%m-%d %H:%M:%S',
         format = '[%(asctime)s] %(levelname)s: %(message)s')
@@ -25,7 +37,7 @@ parser = argparse.ArgumentParser(usage= "%(prog)s [-otlbp] [ARGS]")
 parser.add_argument("-t", "--type", dest = "type", 
                   help    = "Processing type [output]", metavar = "TYPE", 
                   default = "output", action = "store",
-                  choices = [ 'output', 'scale', 'view', 'csv', 'header',
+                  choices = [ 'output', 'scale', 'view', 'csv', 'header', 'json',
                               'class_flags', 'generator', 'validate', 'generate_format' ])
 parser.add_argument("-o",            dest = "output")
 parser.add_argument("-a",            dest = "append")
@@ -37,8 +49,8 @@ parser.add_argument("--delim",       dest = "delim",        default = ',',
                     help = "Delimiter for -t csv")
 parser.add_argument("-l", "--level", dest = "level",        default = 120, type = int,
                     help = "Scaling values up to level [125]")
-parser.add_argument("-b", "--build", dest = "build",        default = 0, type = int,
-                    help = "World of Warcraft build number")
+parser.add_argument("-b", "--build", dest = "build",        default = None, type = parse_version,
+                    help = "World of Warcraft build version (8.0.1.12345)")
 parser.add_argument("--prefix",      dest = "prefix",       default = '',
                     help = "Data structure prefix string")
 parser.add_argument("--suffix",      dest = "suffix",       default = '',
@@ -178,7 +190,7 @@ elif options.type == 'view':
         # If cache has entries for the dbc_file, grab cache values into a database
         for record in dbc_file:
             if not options.raw and record.id in entries:
-                print('{}'.format(str(entries[record.id])))
+                print('{} [hotfix]'.format(str(entries[record.id])))
                 replaced_ids.append(record.id)
             else:
                 print('{}'.format(str(record)))
@@ -200,6 +212,66 @@ elif options.type == 'view':
             print('{}{}'.format(record, hotfix and ' [hotfix]' or ''))
         else:
             print('No record for DBC ID {} found'.format(id))
+elif options.type == 'json':
+    path = os.path.abspath(os.path.join(options.path, options.args[0]))
+    id = None
+    if len(options.args) > 1:
+        id = int(options.args[1])
+
+    dbc_file = DBCFile(options, path)
+    if not dbc_file.open():
+        sys.exit(1)
+
+    cache = HotfixFile(options)
+    if not cache.open():
+        sys.exit(1)
+    else:
+        entries = {}
+        for entry in cache.entries(dbc_file.parser):
+            entries[entry.id] = entry
+
+    str_ = '[\n'
+    logging.debug(dbc_file)
+    if id == None:
+        replaced_ids = []
+        for record in dbc_file:
+            if not options.raw and record.id in entries:
+                data_ = entries[record.id].obj()
+                data_['hotfixed'] = True
+                replaced_ids.append(record.id)
+                str_ += '\t{},\n'.format(json.dumps(data_))
+            else:
+                str_ += '\t{},\n'.format(json.dumps(record.obj()))
+
+        for id, entry in entries.items():
+            if id in replaced_ids:
+                continue
+
+            data_ = entry.obj()
+            data_['hotfixed'] = True
+
+            str_ += '\t{},\n'.format(json.dumps(data_))
+
+    else:
+        if id in entries:
+            record = entries[id]
+        else:
+            record = dbc_file.find(id)
+
+        if record:
+            data_ = record.obj()
+            if id in entries:
+                data_['hotfixed'] = True
+
+            str_ += '\t{},\n'.format(json.dumps(data_))
+        else:
+            print('No record for DBC ID {} found'.format(id))
+
+    str_ = str_[:-2] + '\n'
+    str_ += ']\n'
+
+    print(str_)
+
 elif options.type == 'csv':
     path = os.path.abspath(os.path.join(options.path, options.args[0]))
     id = None
@@ -254,7 +326,7 @@ elif options.type == 'csv':
 elif options.type == 'scale':
     g = CSVDataGenerator(options, {
         'file': 'HpPerSta.txt',
-        'comment': '// Hit points per stamina for level 1 - %d, wow build %d\n' % (
+        'comment': '// Hit points per stamina for level 1 - %d, wow build %s\n' % (
             options.level, options.build),
         'values': [ 'Health', ]
     })
@@ -269,7 +341,7 @@ elif options.type == 'scale':
 
     g = CSVDataGenerator(options, {
         'file': 'SpellScaling.txt',
-        'comment': '// Spell scaling multipliers for levels 1 - %d, wow build %d\n' % (
+        'comment': '// Spell scaling multipliers for levels 1 - %d, wow build %s\n' % (
             options.level, options.build),
         'values': DataGenerator._class_names + [ 'Item', 'Consumable', 'Gem1', 'Gem2', 'Gem3', 'Health', 'DamageReplaceStat' ]
     })
@@ -279,7 +351,7 @@ elif options.type == 'scale':
 
     g = CSVDataGenerator(options, {
         'file': 'BaseMp.txt',
-        'comment': '// Base mana points for levels 1 - %d, wow build %d\n' % (
+        'comment': '// Base mana points for levels 1 - %d, wow build %s\n' % (
             options.level, options.build),
         'values': DataGenerator._class_names
     })
@@ -289,7 +361,7 @@ elif options.type == 'scale':
 
     g = CSVDataGenerator(options, {
         'file': 'CombatRatings.txt',
-        'comment': '// Combat rating values for level 1 - %d, wow build %d\n' % (
+        'comment': '// Combat rating values for level 1 - %d, wow build %s\n' % (
             options.level, options.build),
         'values': [ 'Dodge', 'Parry', 'Block', 'Hit - Melee', 'Hit - Ranged',
                     'Hit - Spell', 'Crit - Melee', 'Crit - Ranged', 'Crit - Spell',
@@ -311,28 +383,28 @@ elif options.type == 'scale':
     g = CSVDataGenerator(options, [ {
         'file': 'ItemSocketCostPerLevel.txt',
         'key': '5.0 Level',
-        'comment': '// Item socket costs for item levels 1 - %d, wow build %d\n' % (
+        'comment': '// Item socket costs for item levels 1 - %d, wow build %s\n' % (
             options.max_ilevel, options.build),
         'values': [ 'Socket Cost' ],
         'max_rows': options.max_ilevel
     }, {
         'file': 'CombatRatingsMultByILvl.txt',
         'key': 'Item Level',
-        'comment': '// Combat rating multipliers for item level 1 - %d, wow build %d\n' % (
+        'comment': '// Combat rating multipliers for item level 1 - %d, wow build %s\n' % (
             options.max_ilevel, options.build),
         'values': combat_rating_values,
         'max_rows': options.max_ilevel
     }, {
         'file': 'StaminaMultByILvl.txt',
         'key': 'Item Level',
-        'comment': '// Stamina multipliers for item level 1 - %d, wow build %d\n' % (
+        'comment': '// Stamina multipliers for item level 1 - %d, wow build %s\n' % (
             options.max_ilevel, options.build),
         'values': combat_rating_values,
         'max_rows': options.max_ilevel
     }, {
         'file': 'ItemLevelSquish.txt',
         'key': 0,
-        'comment': '// Item level translation for item level 1 - %d, wow build %d\n' % (
+        'comment': '// Item level translation for item level 1 - %d, wow build %s\n' % (
             options.max_ilevel, options.build),
         'values': [ 1 ],
         'max_rows': options.max_ilevel,
@@ -344,21 +416,9 @@ elif options.type == 'scale':
     g.generate()
 
     g = CSVDataGenerator(options, {
-        'file': 'ArmorMitigationByLvl.txt',
-        'comment': '// Enemy armor mitigation constants (K-value) for level 1 - %d, wow build %d\n' % (
-            options.level + 3, options.build),
-        'values': [ 'Constant' ],
-        'max_rows': options.level + 3
-    })
-    if not g.initialize():
-        sys.exit(1)
-
-    g.generate()
-
-    g = CSVDataGenerator(options, {
         'file': 'AzeriteLevelToItemLevel.txt',
         'key': 'Azerite Level',
-        'comment': '// Azerite level to item level 1 - %d, wow build %d\n' % (
+        'comment': '// Azerite level to item level 1 - %d, wow build %s\n' % (
             300, options.build),
         'values': [ 'Item Level' ],
         'base_type': 'unsigned',

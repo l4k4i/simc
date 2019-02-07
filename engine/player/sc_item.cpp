@@ -169,13 +169,15 @@ std::string item_t::item_stats_str() const
       continue;
 
     int v = stat_value( i );
+    stat_e stat = util::translate_item_mod( parsed.data.stat_type_e[ i ] );
+
     if ( v == 0 )
       continue;
 
     if ( v > 0 )
       s << "+";
 
-    s << v << " " << util::stat_type_abbrev( util::translate_item_mod( parsed.data.stat_type_e[ i ] ) ) << ", ";
+    s << v << " " << util::stat_type_abbrev( stat ) << ", ";
   }
 
   std::string str = s.str();
@@ -511,12 +513,6 @@ unsigned item_t::item_level() const
   {
     ilvl = parsed.item_level;
   }
-  // If azerite level is defined as an option for an item, use the azerite level to item level
-  // conversion
-  else if ( parsed.azerite_level > 0 )
-  {
-    ilvl = player -> dbc.azerite_item_level( parsed.azerite_level );
-  }
   // Otherwise, normal ilevel processing (base ilevel + upgrade ilevel + artifact ilevel increase)
   else
   {
@@ -663,6 +659,7 @@ void item_t::parse_options()
   option_name_str = options_str;
   std::string remainder = "";
   std::string DUMMY_REFORGE; // TODO-WOD: Remove once profiles update
+  std::string DUMMY_CONTEXT; // not used by simc but used by 3rd parties (raidbots)
 
   std::string::size_type cut_pt = options_str.find_first_of( "," );
 
@@ -702,6 +699,7 @@ void item_t::parse_options()
   options.push_back(opt_string("relic_ilevel", option_relic_ilevel_str));
   options.push_back(opt_string("azerite_powers", option_azerite_powers_str));
   options.push_back(opt_string("azerite_level", option_azerite_level_str));
+  options.push_back(opt_string("context", DUMMY_CONTEXT));
 
   try
   {
@@ -788,6 +786,15 @@ void item_t::parse_options()
       if ( power_id > 0 )
       {
         parsed.azerite_ids.push_back( power_id );
+      }
+      // Try to convert the name to a power (id)
+      else
+      {
+        const auto& power = player->dbc.azerite_power( power_str, true );
+        if ( power.id > 0 )
+        {
+          parsed.azerite_ids.push_back( power.id );
+        }
       }
     }
   }
@@ -877,7 +884,7 @@ std::string item_t::encoded_item() const
     s << ",ilevel=" << option_ilevel_str;
 
   if ( ! option_azerite_level_str.empty() )
-    s << ",azerite_level=" << option_ilevel_str;
+    s << ",azerite_level=" << option_azerite_level_str;
   else if ( parsed.azerite_level > 0 )
     s << ",azerite_level=" << parsed.azerite_level;
 
@@ -970,6 +977,10 @@ std::string item_t::encoded_item() const
   if ( ! option_azerite_powers_str.empty() )
   {
     s << ",azerite_powers=" << option_azerite_powers_str;
+  }
+  else if ( parsed.azerite_ids.size() > 0 )
+  {
+    s << ",azerite_powers=" << util::string_join( parsed.azerite_ids, "/" );
   }
 
   if ( ! option_enchant_str.empty() )
@@ -1380,7 +1391,8 @@ bool item_t::is_valid_type() const
   if ( ! util::is_match_slot( slot ) )
     return true;
 
-  return util::matching_armor_type( player -> type ) >= parsed.data.item_subclass;
+  return parsed.data.item_subclass == ITEM_SUBCLASS_ARMOR_COSMETIC ||
+         util::matching_armor_type( player -> type ) >= parsed.data.item_subclass;
 }
 
 // item_t::decode_armor_type ================================================
@@ -1471,7 +1483,8 @@ void item_t::decode_stats()
   for ( size_t i = 0; i < sizeof_array( parsed.data.stat_type_e ); i++ )
   {
     stat_e s = stat( i );
-    if ( s == STAT_NONE ) continue;
+    if ( s == STAT_NONE )
+      continue;
 
     base_stats.add_stat( s, stat_value( i ) );
     stats.add_stat( s, stat_value( i ) );
@@ -1496,7 +1509,8 @@ void item_t::decode_stats()
 
 void item_t::decode_random_suffix()
 {
-  if ( parsed.suffix_id == 0 )
+  // Ignore all old style random suffixes (negative suffix id)
+  if ( parsed.suffix_id <= 0 )
     return;
 
   // We need the ilevel/quality data, otherwise we cannot figure out
@@ -1620,7 +1634,27 @@ void item_t::decode_gems()
     if ( sim -> challenge_mode )
       return;
 
-    if ( option_gems_str.empty() || option_gems_str == "none" )
+    // First, attempt to parse gems by trying to find them through item data (split the strings by /
+    // and search for each)
+    auto split = util::string_split( option_gems_str, "/" );
+    unsigned gem_index = 0;
+    for ( const auto& gem_str : split )
+    {
+      auto item = dbc::find_gem( gem_str, player->dbc.ptr );
+      if ( item->id > 0 )
+      {
+        parsed.gem_id[ gem_index++ ] = item->id;
+      }
+
+      if ( gem_index == parsed.gem_id.size() - 1 )
+      {
+        break;
+      }
+    }
+
+    // Note, use the parsing results above only if all of the / delimited names can be parsed into a
+    // gem id (gem item id).
+    if ( gem_index == split.size() || option_gems_str.empty() || option_gems_str == "none" )
     {
       // Gems
       for ( size_t i = 0, end = parsed.gem_id.size(); i < end; i++ )
@@ -1662,7 +1696,8 @@ void item_t::decode_gems()
   }
   catch (const std::exception& e)
   {
-    std::throw_with_nested(std::invalid_argument("Error decoding gems"));
+    std::throw_with_nested( std::invalid_argument(
+          fmt::format( "Error decoding gems from '{}'", option_gems_str ) ) ) ;
   }
 }
 

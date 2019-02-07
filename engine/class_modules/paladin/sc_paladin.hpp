@@ -10,14 +10,12 @@ struct blessing_of_sacrifice_redirect_t;
 namespace buffs {
                   struct avenging_wrath_buff_t;
                   struct crusade_buff_t;
-                  struct sephuzs_secret_buff_t;
                   struct holy_avenger_buff_t;
                   struct ardent_defender_buff_t;
-                  struct liadrins_fury_unleashed_t;
                   struct forbearance_t;
                   struct shield_of_vengeance_buff_t;
                 }
-
+const int MAX_START_OF_COMBAT_HOLY_POWER = 1;
 // ==========================================================================
 // Paladin Target Data
 // ==========================================================================
@@ -126,20 +124,8 @@ public:
   action_t* active_sotr;
   heal_t*   active_protector_of_the_innocent;
   action_t* active_zeal;
+  action_t* active_inner_light_damage;
 
-  const special_effect_t* whisper_of_the_nathrezim;
-  const special_effect_t* liadrins_fury_unleashed;
-  const special_effect_t* justice_gaze;
-  const special_effect_t* chain_of_thrayn;
-  const special_effect_t* ashes_to_dust;
-  const special_effect_t* scarlet_inquisitors_expurgation;
-  const special_effect_t* ferren_marcuss_strength;
-  const special_effect_t* saruans_resolve;
-  const special_effect_t* gift_of_the_golden_valkyr;
-  const special_effect_t* heathcliffs_immortality;
-  const special_effect_t* pillars_of_inmost_light;
-  const spell_data_t* sephuz;
-  const spell_data_t* topless_tower;
 
   struct active_actions_t
   {
@@ -152,7 +138,6 @@ public:
     // core
     buffs::avenging_wrath_buff_t* avenging_wrath;
     buffs::crusade_buff_t* crusade;
-    buffs::sephuzs_secret_buff_t* sephuz;
     buff_t* holy_avenger;
     buffs::shield_of_vengeance_buff_t* shield_of_vengeance;
     buff_t* divine_protection;
@@ -161,7 +146,6 @@ public:
     buff_t* grand_crusader;
     buff_t* infusion_of_light;
     buff_t* shield_of_the_righteous;
-    buff_t* last_defender;
     buff_t* avengers_valor;
     buff_t* ardent_defender;
 
@@ -179,21 +163,20 @@ public:
     buff_t* divine_steed;
     buff_t* aegis_of_light;
     stat_buff_t* seraphim;
-
-    buff_t* whisper_of_the_nathrezim;
-    buffs::liadrins_fury_unleashed_t* liadrins_fury_unleashed;
-    buff_t* scarlet_inquisitors_expurgation_driver;
-    buff_t* scarlet_inquisitors_expurgation;
-
-    // Set Bonuses
-    buff_t* sacred_judgment;
-    buff_t* ret_t21_4p;
+    buff_t* redoubt;
 
     // azerite
+    // Ret
     buff_t* avengers_might;
     buff_t* divine_right;
     buff_t* relentless_inquisitor;
     buff_t* zealotry;
+    buff_t* empyrean_power;
+    // Prot
+    buff_t* inspiring_vanguard;
+    buff_t* dauntless_divinity;
+    buff_t* inner_light;
+    buff_t* soaring_shield;
   } buffs;
 
   // Gains
@@ -208,11 +191,7 @@ public:
 
     // Holy Power
     gain_t* hp_templars_verdict_refund;
-    gain_t* hp_liadrins_fury_unleashed;
     gain_t* judgment;
-    gain_t* hp_t19_4p;
-    gain_t* hp_t20_2p;
-    gain_t* hp_justice_gaze;
     gain_t* hp_cs;
   } gains;
 
@@ -220,6 +199,9 @@ public:
   struct spec_t
   {
     const spell_data_t* judgment_2;
+    const spell_data_t* shield_of_the_righteous;
+    const spell_data_t* holy_paladin;
+    const spell_data_t* protection_paladin;
     const spell_data_t* retribution_paladin;
   } spec;
 
@@ -237,12 +219,14 @@ public:
     cooldown_t* guardian_of_ancient_kings; // legen chest
     cooldown_t* holy_shock; // Holy Shock for Crusader's Might && DP
     cooldown_t* light_of_dawn; // Light of Dawn for DP
+    cooldown_t* inner_light;
 
     // whoo fist of justice
     cooldown_t* hammer_of_justice;
 
     cooldown_t* blade_of_justice;
     cooldown_t* divine_hammer;
+    cooldown_t* consecration;
   } cooldowns;
 
   // Passives
@@ -252,17 +236,12 @@ public:
     const spell_data_t* divine_bulwark;
     const spell_data_t* grand_crusader;
     const spell_data_t* hand_of_light;
-    const spell_data_t* holy_insight;
     const spell_data_t* infusion_of_light;
     const spell_data_t* lightbringer;
     const spell_data_t* plate_specialization;
     const spell_data_t* riposte;   // hidden
     const spell_data_t* paladin;
-    const spell_data_t* retribution_paladin;
-    const spell_data_t* protection_paladin;
-    const spell_data_t* holy_paladin;
     const spell_data_t* sanctuary;
-    const spell_data_t* improved_block; //hidden
 
     const spell_data_t* judgment; // mystery, hidden
     const spell_data_t* execution_sentence;
@@ -278,7 +257,6 @@ public:
 
     proc_t* divine_purpose;
     proc_t* the_fires_of_justice;
-    proc_t* tfoj_set_bonus;
     proc_t* art_of_war;
     proc_t* topless_tower;
     proc_t* grand_crusader;
@@ -297,19 +275,12 @@ public:
     const spell_data_t* sanctified_wrath; // needed to pull out cooldown reductions
     const spell_data_t* divine_purpose_ret;
     const spell_data_t* divine_purpose_holy;
-    const spell_data_t* liadrins_fury_unleashed;
-    const spell_data_t* justice_gaze;
-    const spell_data_t* pillars_of_inmost_light;
-    const spell_data_t* chain_of_thrayn;
-    const spell_data_t* ashes_to_dust;
-    const spell_data_t* ferren_marcuss_strength;
-    const spell_data_t* saruans_resolve;
-    const spell_data_t* gift_of_the_golden_valkyr;
-    const spell_data_t* heathcliffs_immortality;
     const spell_data_t* consecration_bonus;
     const spell_data_t* avenging_wrath;
     const spell_data_t* shield_of_the_righteous;
     const spell_data_t* blade_of_wrath;
+    const spell_data_t* inspiring_vanguard;
+    const spell_data_t* lights_decree;
   } spells;
 
   // Talents
@@ -350,14 +321,14 @@ public:
     const spell_data_t* crusaders_judgment;
     const spell_data_t* holy_shield;
     const spell_data_t* blessed_hammer;
-    const spell_data_t* redoubt; // NYI
+    const spell_data_t* redoubt;
     // skip T45
     const spell_data_t* blessing_of_spellwarding;
     const spell_data_t* blessing_of_salvation;
     const spell_data_t* retribution_aura;
     const spell_data_t* hand_of_the_protector;
     const spell_data_t* final_stand;
-    // skip unbreakable spirit - NYI
+    // skip unbreakable spirit
     const spell_data_t* aegis_of_light;
     // Judgment of Light seems to be a recopy from Holy.
     //const spell_data_t* judgment_of_light;
@@ -394,17 +365,25 @@ public:
   struct azerite_t
   {
     // shared
+    azerite_power_t indomitable_justice;
+
     // holy
     // protection
+    azerite_power_t inspiring_vanguard; // TODO : check how it interacts with First Avenger
+    azerite_power_t dauntless_divinity; // TODO: remove once 8.1 goes live
+    azerite_power_t inner_light;
+    azerite_power_t soaring_shield;
+
     // retribution
     azerite_power_t avengers_might;
     azerite_power_t deferred_sentence; // NYI - spell data makes no sense
-    azerite_power_t divine_right;
+    azerite_power_t divine_right; // TODO: remove once 8.1 goes live
     azerite_power_t expurgation;
     azerite_power_t grace_of_the_justicar; // healing
-    azerite_power_t indomitable_justice; // NYI
     azerite_power_t relentless_inquisitor;
-    azerite_power_t zealotry;
+    azerite_power_t zealotry; // TODO: remove once 8.1 goes live
+    azerite_power_t empyrean_power;
+    azerite_power_t lights_decree;
   } azerite;
 
   player_t* beacon_target;
@@ -416,6 +395,7 @@ public:
   timespan_t last_jol_proc;
 
   bool fake_sov;
+  int indomitable_justice_pct;
 
   paladin_t( sim_t* sim, const std::string& name, race_e r = RACE_TAUREN );
 
@@ -442,26 +422,23 @@ public:
   virtual double    composite_armor_multiplier() const override;
   virtual double    composite_bonus_armor() const override;
   virtual double    composite_melee_attack_power() const override;
-  virtual double    composite_melee_crit_chance() const override;
+  virtual double    composite_melee_attack_power( attack_power_e type ) const override;
   virtual double    composite_melee_expertise( const weapon_t* weapon ) const override;
   virtual double    composite_melee_haste() const override;
   virtual double    composite_melee_speed() const override;
-  virtual double    composite_spell_crit_chance() const override;
   virtual double    composite_spell_haste() const override;
   virtual double    composite_player_multiplier( school_e school ) const override;
-  virtual double    composite_player_heal_multiplier( const action_state_t* s ) const override;
   virtual double    composite_spell_power( school_e school ) const override;
   virtual double    composite_spell_power_multiplier() const override;
   virtual double    composite_crit_avoidance() const override;
   virtual double    composite_parry_rating() const override;
   virtual double    composite_parry() const override;
   virtual double    composite_block() const override;
-  virtual double    composite_block_reduction() const override;
+  virtual double    composite_block_reduction( action_state_t* s ) const override;
   virtual double    temporary_movement_modifier() const override;
 
   // combat outcome functions
   virtual void      assess_damage( school_e, dmg_e, action_state_t* ) override;
-  virtual void      assess_damage_imminent( school_e, dmg_e, action_state_t* ) override;
   virtual void      assess_heal( school_e, dmg_e, action_state_t* ) override;
   virtual void      target_mitigation( school_e, dmg_e, action_state_t* ) override;
 
@@ -469,11 +446,9 @@ public:
   virtual void      create_options() override;
   virtual double    matching_gear_multiplier( attribute_e attr ) const override;
   virtual action_t* create_action( const std::string& name, const std::string& options_str ) override;
-  void       activate() override;
-  virtual resource_e primary_resource() const override { return RESOURCE_MANA; }
+  virtual resource_e primary_resource() const override;
   virtual role_e    primary_role() const override;
   virtual stat_e    convert_hybrid_stat( stat_e s ) const override;
-  virtual stat_e    primary_stat() const override;
   virtual void      regen( timespan_t periodicity ) override;
   virtual void      combat_begin() override;
   virtual void      copy_from( player_t* ) override;
@@ -481,16 +456,18 @@ public:
   virtual double current_health() const override;
 
   double  get_hand_of_light() const;
-  bool    get_how_availability() const;
+  bool    get_how_availability( player_t* t ) const;
   void    trigger_grand_crusader();
   void    trigger_holy_shield( action_state_t* s );
   void    trigger_forbearance( player_t* target );
   int     get_local_enemies( double distance ) const;
   bool    standing_in_consecration() const;
+  double  last_defender_damage() const;
+  double  last_defender_mitigation() const;
 
   expr_t*   create_consecration_expression( const std::string& expr_str );
-  
- ground_aoe_event_t* active_consecration;
+
+  ground_aoe_event_t* active_consecration;
 
   std::string default_potion() const override;
   std::string default_flask() const override;
@@ -544,16 +521,9 @@ public:
 };
 
 namespace buffs {
-  struct liadrins_fury_unleashed_t : public buff_t
-  {
-    liadrins_fury_unleashed_t( player_t* p );
-  };
-
   struct avenging_wrath_buff_t : public buff_t
   {
     avenging_wrath_buff_t( player_t* p );
-
-    void expire_override( int expiration_stacks, timespan_t remaining_duration ) override;
 
     double get_damage_mod() const
     {
@@ -601,8 +571,6 @@ namespace buffs {
   {
     crusade_buff_t( player_t* p );
 
-    void expire_override( int expiration_stacks, timespan_t remaining_duration ) override;
-
     double get_damage_mod()
     {
       return damage_modifier * ( this -> stack() );
@@ -628,12 +596,12 @@ namespace buffs {
     paladin_t* paladin;
 
     forbearance_t( player_t* p, const char *name ) :
-      buff_t( buff_creator_t( p, name, p -> find_spell( 25771 ) ) ),
+      buff_t( p, name, p -> find_spell( 25771 ) ),
       paladin( nullptr )
     { }
 
     forbearance_t( paladin_td_t* ap, const char *name ) :
-      buff_t( buff_creator_t( *ap, name, ap -> source -> find_spell( 25771 ) ) ),
+      buff_t( *ap, name, ap -> source -> find_spell( 25771 ) ),
       paladin( debug_cast<paladin_t*>( ap -> source ) )
     { }
   };
@@ -670,6 +638,7 @@ public:
   bool ret_inquisition;
   bool ret_crusade;
   bool avenging_wrath;
+  bool last_defender_increase;
 
   paladin_action_t( const std::string& n, paladin_t* player,
                     const spell_data_t* s = spell_data_t::nil() ) :
@@ -681,16 +650,17 @@ public:
     ret_damage_increase_two( ab::data().affected_by( player -> spec.retribution_paladin -> effectN( 11 ) ) ),
     ret_damage_increase_three( ab::data().affected_by( player -> spec.retribution_paladin -> effectN( 12 ) ) ),
     ret_damage_increase_four( ab::data().affected_by( player -> spec.retribution_paladin -> effectN( 13 ) ) ),
-    ret_mastery_direct( ab::data().affected_by( player -> passives.hand_of_light -> effectN( 1 ) ) || ab::data().affected_by( player -> passives.hand_of_light -> effectN( 2 ) ) )
+    ret_mastery_direct( ab::data().affected_by( player -> passives.hand_of_light -> effectN( 1 ) ) || ab::data().affected_by( player -> passives.hand_of_light -> effectN( 2 ) ) ),
+    last_defender_increase( ab::data().affected_by( player -> talents.last_defender -> effectN( 5 ) ) )
   {
     // Aura buff to protection paladin added in 7.3
-    if ( p() -> specialization() == PALADIN_PROTECTION && this -> data().affected_by( p() -> passives.protection_paladin -> effectN( 1 ) ) )
+    if ( p() -> specialization() == PALADIN_PROTECTION && this -> data().affected_by( p() -> spec.protection_paladin -> effectN( 1 ) ) )
     {
-      this -> base_dd_multiplier *= 1.0 + p() -> passives.protection_paladin -> effectN( 1 ).percent();
+      this -> base_dd_multiplier *= 1.0 + p() -> spec.protection_paladin -> effectN( 1 ).percent();
     }
-    if ( p() -> specialization() == PALADIN_PROTECTION && this -> data().affected_by( p() -> passives.protection_paladin -> effectN( 2 ) ) )
+    if ( p() -> specialization() == PALADIN_PROTECTION && this -> data().affected_by( p() -> spec.protection_paladin -> effectN( 2 ) ) )
     {
-      this -> base_td_multiplier *= 1.0 + p() -> passives.protection_paladin -> effectN( 2 ).percent();
+      this -> base_td_multiplier *= 1.0 + p() -> spec.protection_paladin -> effectN( 2 ).percent();
     }
 
 
@@ -729,9 +699,9 @@ public:
     if ( p() -> specialization() == PALADIN_RETRIBUTION ) {
       update_hasted_cooldowns_by_passive( player -> spec.retribution_paladin );
     } else if ( p() -> specialization() == PALADIN_PROTECTION ) {
-      update_hasted_cooldowns_by_passive( player -> passives.protection_paladin );
+      update_hasted_cooldowns_by_passive( player -> spec.protection_paladin );
     } else {
-      update_hasted_cooldowns_by_passive( player -> passives.holy_paladin );
+      update_hasted_cooldowns_by_passive( player -> spec.holy_paladin );
     }
     if ( hasted_cd && !hasted_gcd ) hasted_gcd = true;
   }
@@ -835,26 +805,35 @@ public:
       }
       if ( ret_crusade ) {
         if ( p() -> buffs.crusade -> check() ) {
-          double aw_multiplier = 1.0 + p() -> buffs.crusade -> get_damage_mod();
-          if ( p() -> chain_of_thrayn ) {
-            aw_multiplier += p() -> spells.chain_of_thrayn -> effectN( 3 ).percent();
-          }
-          am *= aw_multiplier;
+          am *= 1.0 + p() -> buffs.crusade -> get_damage_mod();
         }
       }
     }
 
     if ( avenging_wrath ) {
       if ( p() -> buffs.avenging_wrath -> check() ) {
-        double aw_multiplier = p() -> buffs.avenging_wrath -> get_damage_mod();
-        if ( p() -> chain_of_thrayn ) {
-          aw_multiplier += p() -> spells.chain_of_thrayn -> effectN( 3 ).percent();
-        }
-        am *= 1.0 + aw_multiplier;
+        am *= 1.0 + p() -> buffs.avenging_wrath -> get_damage_mod();
       }
     }
 
+    if ( p() -> talents.last_defender -> ok() && last_defender_increase )
+    {
+      am *= p() -> last_defender_damage();
+    }
+
     return am;
+  }
+
+  double composite_crit_chance() const override
+  {
+    double cc = ab::composite_crit_chance();
+
+    if ( avenging_wrath && p() -> buffs.avenging_wrath -> check() )
+    {
+      cc += p() -> buffs.avenging_wrath -> get_crit_bonus();
+    }
+
+    return cc;
   }
 
   virtual double composite_target_multiplier( player_t* t ) const override
@@ -910,10 +889,7 @@ struct paladin_spell_t : public paladin_spell_base_t<spell_t>
   paladin_spell_t( const std::string& n, paladin_t* p,
                    const spell_data_t* s = spell_data_t::nil() ) :
     base_t( n, p, s )
-  {
-    // Holy Insight - Holy passive
-    base_multiplier *= 1.0 + p -> passives.holy_insight -> effectN( 6 ).percent();
-  }
+  { }
 };
 
 struct paladin_heal_t : public paladin_spell_base_t<heal_t>
@@ -996,18 +972,27 @@ struct holy_power_generator_t : public paladin_melee_attack_t
                           const spell_data_t* s = spell_data_t::nil() ):
                           paladin_melee_attack_t( n, p, s )
   {}
-
-  virtual void execute() override;
 };
 
-struct holy_power_consumer_t : public paladin_melee_attack_t
+struct judgment_t : public paladin_melee_attack_t
 {
-  holy_power_consumer_t( const std::string& n, paladin_t* p,
-                          const spell_data_t* s = spell_data_t::nil() );
+  int indomitable_justice_pct;
+  judgment_t( paladin_t* p, const std::string& options_str );
 
-  virtual void execute() override;
-  virtual void impact( action_state_t* s ) override;
-  virtual double cost() const override;
+  virtual double bonus_da( const action_state_t* s ) const override;
+  proc_types proc_type() const override;
+  void impact( action_state_t* s ) override;
 };
+
+struct shield_of_the_righteous_buff_t : public buff_t
+{
+  shield_of_the_righteous_buff_t( paladin_t* p );
+  void expire_override( int expiration_stacks, timespan_t remaining_duration ) override;
+  void sotr_custom_trigger();
+
+  double avengers_valor_increase;
+};
+
+void empyrean_power( special_effect_t& effect );
 
 }

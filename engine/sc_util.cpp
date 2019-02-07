@@ -890,21 +890,27 @@ const char* util::weapon_subclass_string( int subclass )
 {
   switch ( subclass )
   {
-    case ITEM_SUBCLASS_WEAPON_AXE:
-    case ITEM_SUBCLASS_WEAPON_AXE2:     return "Axe";
+    case ITEM_SUBCLASS_WEAPON_AXE:      return "One-handed Axe";
+    case ITEM_SUBCLASS_WEAPON_AXE2:     return "Two-handed Axe";
     case ITEM_SUBCLASS_WEAPON_BOW:      return "Bow";
     case ITEM_SUBCLASS_WEAPON_GUN:      return "Gun";
-    case ITEM_SUBCLASS_WEAPON_MACE:
-    case ITEM_SUBCLASS_WEAPON_MACE2:    return "Mace";
+    case ITEM_SUBCLASS_WEAPON_MACE:     return "One-handed Mace";
+    case ITEM_SUBCLASS_WEAPON_MACE2:    return "Two-handed Mace";
     case ITEM_SUBCLASS_WEAPON_POLEARM:  return "Polearm";
-    case ITEM_SUBCLASS_WEAPON_SWORD:
-    case ITEM_SUBCLASS_WEAPON_SWORD2:   return "Sword";
+    case ITEM_SUBCLASS_WEAPON_SWORD:    return "One-handed Sword";
+    case ITEM_SUBCLASS_WEAPON_SWORD2:   return "Two-handed Sword";
     case ITEM_SUBCLASS_WEAPON_STAFF:    return "Staff";
     case ITEM_SUBCLASS_WEAPON_FIST:     return "Fist Weapon";
     case ITEM_SUBCLASS_WEAPON_DAGGER:   return "Dagger";
     case ITEM_SUBCLASS_WEAPON_THROWN:   return "Thrown";
     case ITEM_SUBCLASS_WEAPON_CROSSBOW: return "Crossbow";
     case ITEM_SUBCLASS_WEAPON_WAND:     return "Wand";
+    case ITEM_SUBCLASS_WEAPON_FISHING_POLE: return "Fishing Pole";
+    case ITEM_SUBCLASS_WEAPON_MISC:     return "Miscellaneous";
+    case ITEM_SUBCLASS_WEAPON_SPEAR:    return "Spear";
+    case ITEM_SUBCLASS_WEAPON_EXOTIC:   return "Exotic";
+    case ITEM_SUBCLASS_WEAPON_EXOTIC2:  return "Exotic (2)";
+    case ITEM_SUBCLASS_WEAPON_WARGLAIVE: return "War Glaive";
     default:                            return "Unknown";
   }
 }
@@ -935,6 +941,18 @@ const char* util::weapon_class_string( int weapon_class )
 weapon_e util::parse_weapon_type( const std::string& name )
 {
   return parse_enum<weapon_e, WEAPON_NONE, WEAPON_MAX, weapon_type_string>( name );
+}
+
+profile_source util::parse_profile_source( const std::string& name )
+{
+  if ( util::str_compare_ci( name, "blizzard" ) )
+  {
+    return profile_source::BLIZZARD_API;
+  }
+  else
+  {
+    return profile_source::DEFAULT;
+  }
 }
 
 // slot_type_string =========================================================
@@ -1023,6 +1041,7 @@ const char* util::armor_type_string( item_subclass_armor type )
     case ITEM_SUBCLASS_ARMOR_PLATE: return "plate";
     case ITEM_SUBCLASS_ARMOR_SHIELD: return "shield";
     case ITEM_SUBCLASS_ARMOR_MISC: return "misc";
+    case ITEM_SUBCLASS_ARMOR_COSMETIC: return "cosmetic";
     default: return "";
   }
 }
@@ -1104,6 +1123,8 @@ const char* util::cache_type_string( cache_e c )
     case CACHE_MITIGATION_VERSATILITY:  return "mitigation_versatility";
     case CACHE_LEECH: return "leech";
     case CACHE_RUN_SPEED: return "run_speed";
+    case CACHE_RPPM_HASTE: return "rppm_haste_coeff";
+    case CACHE_RPPM_CRIT: return "rppm_crit_coeff";
 
     default: return "unknown";
   }
@@ -1125,14 +1146,14 @@ const char* util::proc_type_string( proc_types type )
     case PROC1_RANGED_TAKEN:         return "RangedShotTaken";
     case PROC1_RANGED_ABILITY:       return "RangedAbility";
     case PROC1_RANGED_ABILITY_TAKEN: return "RangedAbilityTaken";
-    case PROC1_AOE_HEAL:             return "AoeHeal";
-    case PROC1_AOE_HEAL_TAKEN:       return "AoeHealTaken";
-    case PROC1_AOE_SPELL:            return "AoeHarmfulSpell";
-    case PROC1_AOE_SPELL_TAKEN:      return "AoeHarmfulSpellTaken";
-    case PROC1_HEAL:                 return "Heal";
-    case PROC1_HEAL_TAKEN:           return "HealTaken";
-    case PROC1_SPELL:                return "HarmfulSpell";
-    case PROC1_SPELL_TAKEN:          return "HarmfulSpellTaken";
+    case PROC1_NONE_HEAL:            return "GenericHeal";
+    case PROC1_NONE_HEAL_TAKEN:      return "GenericHealTaken";
+    case PROC1_NONE_SPELL:           return "GenericHarmfulSpell";
+    case PROC1_NONE_SPELL_TAKEN:     return "GenericHarmfulSpellTaken";
+    case PROC1_MAGIC_HEAL:           return "MagicHeal";
+    case PROC1_MAGIC_HEAL_TAKEN:     return "MagicHealTaken";
+    case PROC1_MAGIC_SPELL:          return "MagicHarmfulSpell";
+    case PROC1_MAGIC_SPELL_TAKEN:    return "MagicHarmfulSpellTaken";
     case PROC1_PERIODIC:             return "HarmfulTick";
     case PROC1_PERIODIC_TAKEN:       return "HarmfulTickTaken";
     case PROC1_ANY_DAMAGE_TAKEN:     return "AnyDamageTaken";
@@ -1489,13 +1510,9 @@ const char* util::spec_string_no_class( const player_t& p )
     return "Fury";
     case WARRIOR_PROTECTION:
     return "Protection";
-
     default:
-    // if this is a pet or an unknown spec, the AMR link is pointless anyway
-    assert( false );
-    break;
+    return "";
   }
-  return nullptr;
 }
 
 // parse_stat_type ==========================================================
@@ -1831,6 +1848,8 @@ race_e util::translate_race_id( int rid )
     case 28: return RACE_HIGHMOUNTAIN_TAUREN;
     case 29: return RACE_VOID_ELF;
     case 30: return RACE_LIGHTFORGED_DRAENEI;
+    case 34: return RACE_DARK_IRON_DWARF;
+    case 36: return RACE_MAGHAR_ORC;
   }
 
   return RACE_NONE;
@@ -2007,9 +2026,7 @@ item_subclass_weapon util::translate_weapon( weapon_e weapon )
     case WEAPON_THROWN:    return ITEM_SUBCLASS_WEAPON_THROWN;
     case WEAPON_WAND:      return ITEM_SUBCLASS_WEAPON_WAND;
     case WEAPON_WARGLAIVE: return ITEM_SUBCLASS_WEAPON_WARGLAIVE;
-    default:
-      assert( false );
-      return ITEM_SUBCLASS_WEAPON_MISC;
+    default:               return ITEM_SUBCLASS_WEAPON_INVALID;
   }
 }
 
@@ -2279,6 +2296,15 @@ std::string util::rppm_scaling_string( unsigned s )
     }
   }
   return r;
+}
+
+std::string util::profile_source_string( profile_source ps )
+{
+  switch( ps )
+  {
+    case profile_source::BLIZZARD_API: return "blizzard";
+    default:                           return "default";
+  }
 }
 
 // specialization_string ====================================================
@@ -2908,6 +2934,34 @@ bool util::contains_non_ascii( const std::string& s )
   return false;
 }
 
+/**
+ * Print chained exceptions, separated by ' :'.
+ */
+void util::print_chained_exception( const std::exception& e, std::ostream& out, int level)
+
+{
+  fmt::print(out, "{}{}", level > 0 ? ": " : "", e.what());
+  try {
+      std::rethrow_if_nested(e);
+  } catch(const std::exception& e) {
+    print_chained_exception(e, out, level+1);
+  } catch(...) {}
+}
+
+void util::print_chained_exception( std::exception_ptr eptr, std::ostream& out, int level)
+{
+  try
+  {
+    if (eptr) {
+      std::rethrow_exception(eptr);
+    }
+  }
+  catch(const std::exception& e)
+  {
+    print_chained_exception(e, out, level);
+  }
+}
+
 namespace util {
 /* Determine number of digits for a given Number
  *
@@ -2974,6 +3028,45 @@ double crit_multiplier( meta_gem_e gem )
   }
 }
 
+bool is_alliance( race_e race )
+{
+  switch ( race )
+  {
+    case RACE_NIGHT_ELF:
+    case RACE_HUMAN:
+    case RACE_GNOME:
+    case RACE_DWARF:
+    case RACE_DRAENEI:
+    case RACE_WORGEN:
+    case RACE_PANDAREN_ALLIANCE:
+    case RACE_VOID_ELF:
+    case RACE_LIGHTFORGED_DRAENEI:
+    case RACE_DARK_IRON_DWARF:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool is_horde( race_e race )
+{
+  switch ( race )
+  {
+    case RACE_ORC:
+    case RACE_TROLL:
+    case RACE_UNDEAD:
+    case RACE_BLOOD_ELF:
+    case RACE_TAUREN:
+    case RACE_GOBLIN:
+    case RACE_PANDAREN_HORDE:
+    case RACE_HIGHMOUNTAIN_TAUREN:
+    case RACE_NIGHTBORNE:
+    case RACE_MAGHAR_ORC:
+      return true;
+    default:
+      return false;
+  }
+}
 
 } // namespace util
 

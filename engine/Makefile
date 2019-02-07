@@ -54,8 +54,8 @@ endif
 
 
 MKDIR      = mkdir
-CXX        = g++
-CPP_FLAGS  = -Wall -Wextra -W -I. -I./util -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++11 -O3 -MMD -MP \
+CXX        = c++
+CPP_FLAGS  = -Wall -Wextra -W -I. -I./util -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++14 -O3 -MMD -MP \
 -Wpedantic \
 -Wcast-qual \
 -Wconversion-null
@@ -64,6 +64,12 @@ OPTS       =
 GIT        = $(shell [ -d ../.git ] && which git)
 
 LINK_LIBS  =
+
+ifeq (${SC_NO_NETWORKING},)
+  LINK_LIBS += -lcurl
+else
+  OPTS += -DSC_NO_NETWORKING
+endif
 
 # Include build setting from user configuration file
 -include ../build.conf
@@ -91,14 +97,8 @@ endif
 ifneq (${NO_DEBUG},)
   CPP_FLAGS += -DNDEBUG
 endif
-ifneq (${C++14},)
-  CPP_FLAGS += --std=c++1y
-endif
-ifneq (${c++0x},)
-  CPP_FLAGS += --std=c++0x
-endif
-ifneq (${C++03},)
-  CPP_FLAGS += --std=c++03
+ifneq (${C++17},)
+  CPP_FLAGS += --std=c++17
 endif
 ifneq (${LTO},)
   OPTS += -flto
@@ -158,6 +158,12 @@ ifeq (UNIX,${OS})
   COPY       = cp
   REMOVE     = rm -f
   PATHSEP    = /
+endif
+
+# Additional include paths for FreeBSD
+ifeq (FreeBSD,${FLAVOR})
+  CPP_FLAGS += -I/usr/local/include
+  LINK_FLAGS += -L/usr/local/lib
 endif
 
 # Windows platform with MinGW32

@@ -267,13 +267,36 @@ namespace timespan_adl_barrier
 
   inline std::ostream& operator<<(std::ostream &os, const timespan_t& x)
   {
-    fmt::print(os, "{:d}:{:02d}.{:03d}", (int64_t)x.total_minutes(),
-                                         (int64_t)x.total_seconds() % 60,
-                                         (int64_t)x.total_millis() % 1000 );
+    fmt::print(os, "{:.3f}", x.total_seconds() );
     return os;
   }
 } // namespace timespan_adl_barrier
 
 using timespan_adl_barrier::timespan_t;
+
+constexpr timespan_t operator"" _ms( unsigned long long time )
+{
+  return timespan_t::from_millis( time );
+}
+
+constexpr timespan_t operator"" _s( unsigned long long time )
+{
+  return timespan_t::from_seconds( time );
+}
+
+constexpr timespan_t operator"" _s( long double time )
+{
+  return timespan_t::from_seconds( time );
+}
+
+constexpr timespan_t operator"" _min( unsigned long long time )
+{
+  return timespan_t::from_minutes( time );
+}
+
+constexpr timespan_t operator"" _min( long double time )
+{
+  return timespan_t::from_minutes( time );
+}
 
 #endif // SC_TIMESPAN_HPP

@@ -1,8 +1,17 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 # CASC file formats, based on the work of Caali et al. @ http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-model-editing/471104-analysis-of-casc-filesystem.html
-import os, sys, mmap, hashlib, stat, struct, zlib, glob, re, urllib.request, urllib.error, collections, codecs, io
+import os, sys, mmap, hashlib, stat, struct, zlib, glob, re, urllib.request, urllib.error, collections, codecs, io, binascii, socket
 
 import jenkins
+
+try:
+    import requests
+except Exception as error:
+    print('ERROR: %s, casc_extract.py requires the Python requests (http://docs.python-requests.org/en/master/) package to function' % error, file = sys.stderr)
+    sys.exit(1)
+
+_S = requests.Session()
+_S.mount('http://', requests.adapters.HTTPAdapter(pool_connections = 1, pool_maxsize = 1))
 
 _BLTE_MAGIC = b'BLTE'
 _CHUNK_DATA_OFFSET_LEN = 4
@@ -15,6 +24,9 @@ _BLOCK_DATA_SIZE = 65535
 _NULL_CHUNK = 0x00
 _COMPRESSED_CHUNK = 0x5A
 _UNCOMPRESSED_CHUNK = 0x4E
+_ENCRYPTED_CHUNK = 0x45
+
+_ENCRYPTION_HEADER = struct.Struct('<B8sBIc')
 
 CDNIndexRecord = collections.namedtuple( 'CDNIndexRecord', [ 'index', 'size', 'offset' ] )
 
@@ -34,8 +46,8 @@ class BLTEChunk(object):
 			return False
 
 		type = data[0]
-		if type not in [ _NULL_CHUNK, _COMPRESSED_CHUNK, _UNCOMPRESSED_CHUNK ]:
-			sys.stderr.write('Unknown chunk type %#x for chunk%d\n' % (type, self.id))
+		if type not in [ _NULL_CHUNK, _COMPRESSED_CHUNK, _UNCOMPRESSED_CHUNK, _ENCRYPTED_CHUNK ]:
+			sys.stderr.write('Unknown chunk type %#x for chunk%d length=%d\n' % (type, self.id, len(data)))
 			return False
 
 		if type != 0x00:
@@ -49,7 +61,7 @@ class BLTEChunk(object):
 			self.output_data = ''
 		elif type == _UNCOMPRESSED_CHUNK:
 			self.output_data = data[1:]
-		else:
+		elif type == _COMPRESSED_CHUNK:
 			dc = zlib.decompressobj()
 			uncompressed_data = dc.decompress(data[1:])
 			if len(dc.unused_data) > 0:
@@ -62,6 +74,45 @@ class BLTEChunk(object):
 				return False
 
 			self.output_data = uncompressed_data
+		elif type == _ENCRYPTED_CHUNK:
+			offset = 1
+			key_name_len = struct.unpack_from('<B', data, offset)[0]
+			offset += 1
+			if key_name_len != 8:
+				sys.stderr.write('Only key name lengths of 8 bytes are supported for encrypted chunks, given %d\n' %
+					key_name_len)
+				return False
+
+			key_name = struct.unpack_from('%ds' % key_name_len, data, offset)[0]
+			offset += key_name_len
+
+			iv_len = struct.unpack_from('<B', data, offset)[0]
+			offset += 1
+			if iv_len != 4:
+				sys.stderr.write('Only initial vector lengths of 4 bytes are supported for encrypted chunks, given %d\n' %
+					iv_len)
+				return False
+
+			iv = struct.unpack_from('%ds' % iv_len, data, offset)[0]
+			offset += iv_len
+
+			type_ = struct.unpack_from('<c', data, offset)[0]
+			offset += 1
+
+			if type_ != b'S':
+				sys.stderr.write('Only salsa20 encryption supported, given "%s"\n' %
+					type_.decode('ascii'))
+				return False
+
+			sys.stderr.write('Encrypted chunk %d, type=%s, key_name_len=%d, key_name=%s, iv_len=%d iv=%s, sz=%d\n' % (
+				self.id, type_.decode('ascii'), key_name_len, binascii.hexlify(key_name).decode('ascii'), iv_len,
+				binascii.hexlify(iv).decode('ascii'),
+				len(data) - (_ENCRYPTION_HEADER.size + 1)
+			))
+
+			self.output_data = b'\x00' * (len(data) - (_ENCRYPTION_HEADER.size + 1))
+		else:
+			return False
 
 		return True
 
@@ -169,6 +220,7 @@ class BLTEFile(object):
 				data = self.__read(chunk.chunk_length)
 				if not chunk.extract(data):
 					self.extract_status = False
+					return False
 
 				self.output_data += chunk.output_data
 				sum_in_file += len(chunk.output_data)
@@ -217,6 +269,10 @@ class BLTEExtract(object):
 			os.makedirs(dirname)
 
 		data = self.extract_buffer(data)
+		if not data:
+			print('Unable to extract %s ...' % os.path.basename(fname))
+			return
+
 		with open(fname, 'wb') as f:
 			f.write(data)
 
@@ -311,19 +367,15 @@ class CASCObject(object):
 
 	def get_url(self, url, headers = None):
 		try:
-			req = urllib.request.Request(url)
-			if headers:
-				for k, v in headers.items():
-					req.add_header(k, v)
+			r = _S.get(url, headers = headers)
 
 			print('Fetching %s ...' % url)
-			f = urllib.request.urlopen(req, timeout = 5)
-			if f.getcode() not in [200, 206]:
-				self.options.parser.error('HTTP request for %s returns %u' % (url, f.getcode()))
-		except urllib.error.URLError as e:
-			self.options.parser.error('Unable to fetch %s: %s' % (url, e.reason))
+			if r.status_code not in [200, 206]:
+				self.options.parser.error('HTTP request for %s returns %u' % (url, r.status_code))
+		except Exception as e:
+			self.options.parser.error('Unable to fetch %s: %s' % (url, r.reason))
 
-		return f
+		return r
 
 	def cache_dir(self, path = None):
 		dir = self.options.cache
@@ -343,7 +395,7 @@ class CASCObject(object):
 
 		if not os.path.exists(file):
 			handle = self.get_url(url, headers)
-			data = handle.read()
+			data = handle.content
 			with open(file, 'wb') as f:
 				f.write(data)
 
@@ -377,6 +429,7 @@ class CDNIndex(CASCObject):
 	PATCH_ALPHA = 'wow_alpha'
 	PATCH_PTR = 'wowt'
 	PATCH_LIVE = 'wow'
+	PATCH_CLASSIC = 'wow_classic'
 
 	def __init__(self, options):
 		CASCObject.__init__(self, options)
@@ -416,6 +469,8 @@ class CDNIndex(CASCObject):
 			return '%s/%s' % ( CDNIndex.PATCH_BASE_URL, CDNIndex.PATCH_BETA )
 		elif self.options.alpha:
 			return '%s/%s' % ( CDNIndex.PATCH_BASE_URL, CDNIndex.PATCH_ALPHA )
+		elif self.options.classic:
+			return '%s/%s' % ( CDNIndex.PATCH_BASE_URL, CDNIndex.PATCH_CLASSIC )
 		else:
 			return '%s/%s' % ( CDNIndex.PATCH_BASE_URL, CDNIndex.PATCH_LIVE )
 
@@ -423,14 +478,15 @@ class CDNIndex(CASCObject):
 		cdns_url = '%s/cdns' % self.patch_base_url()
 		handle = self.get_url(cdns_url)
 
-		data = handle.read().decode('utf-8').strip().split('\n')
+		data = handle.text.strip().split('\n')
 		for line in data:
 			split = line.split('|')
 			if split[0] != 'us':
 				continue
 
 			self.cdn_path = split[1]
-			self.cdn_host = split[2].split(' ')[0].strip()
+			cdns = [urllib.parse.urlparse(x).netloc for x in split[3].split(' ')]
+			self.cdn_host = cdns[0]
 
 		if not self.cdn_path or not self.cdn_host:
 			sys.stderr.write('Unable to extract CDN information\n')
@@ -446,7 +502,7 @@ class CDNIndex(CASCObject):
 		version_url =  '%s/versions' % self.patch_base_url()
 		handle = self.get_url(version_url)
 
-		for line in handle.readlines():
+		for line in handle.iter_lines():
 			split = line.decode('utf-8').strip().split('|')
 			if split[0] != 'us':
 				continue
@@ -574,6 +630,27 @@ class CDNIndex(CASCObject):
 
 		return handle.read()
 
+class RibbitIndex(CDNIndex):
+	def get_url(self, content, headers = None):
+		if headers or 'http://' in content:
+			return super().get_url(content, headers)
+		else:
+			s = socket.create_connection(('us.version.battle.net', 1119), 10)
+			n_sent = s.send(bytes(content + '\r\n', 'ascii'))
+			return s.makefile('b')
+
+	def patch_base_url(self):
+		if self.options.ptr:
+			return 'v1/products/%s' % self.PATCH_PTR
+		elif self.options.beta:
+			return 'v1/products/%s' % self.PATCH_BETA
+		elif self.options.alpha:
+			return 'v1/products/%s' % self.PATCH_ALPHA
+		elif self.options.classic:
+			return 'v1/products/%s' % self.PATCH_CLASSIC
+		else:
+			return 'v1/products/%s' % self.PATCH_LIVE
+
 class CASCDataIndexFile(object):
 	def __init__(self, options, index, version, file):
 		self.index = index
@@ -679,7 +756,7 @@ class CASCEncodingFile(CASCObject):
 
 		handle = self.get_url(self.build.encoding_blte_url())
 
-		blte = BLTEFile(handle.read())
+		blte = BLTEFile(handle.content)
 		if not blte.extract():
 			self.options.parser.error('Unable to uncompress BLTE data for encoding file')
 
@@ -872,7 +949,7 @@ class CASCRootFile(CASCObject):
 
 			handle = self.get_url(self.build.cdn_url('data', codecs.encode(keys[0], 'hex').decode('utf-8')))
 
-			blte = BLTEFile(handle.read())
+			blte = BLTEFile(handle.content)
 			if not blte.extract():
 				self.options.parser.error('Unable to uncompress BLTE data for root file')
 

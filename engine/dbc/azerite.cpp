@@ -2,6 +2,8 @@
 
 #include "azerite.hpp"
 
+#include "dbc/dbc.hpp"
+
 #include "generated/azerite.inc"
 #if SC_USE_PTR == 1
 #include "generated/azerite_ptr.inc"
@@ -10,7 +12,8 @@
 const azerite_power_entry_t& azerite_power_entry_t::find( unsigned id, bool ptr )
 {
 #if SC_USE_PTR == 1
-  const auto& data = ptr ? __ptr_azerite_power_data : __azerite_power_data;
+  const auto data = ptr ? arv::array_view<azerite_power_entry_t>(__ptr_azerite_power_data)
+    : arv::array_view<azerite_power_entry_t>(__azerite_power_data);
 #else
   ( void ) ptr;
   const auto& data = __azerite_power_data;
@@ -41,7 +44,8 @@ const azerite_power_entry_t& azerite_power_entry_t::nil()
 arv::array_view<azerite_power_entry_t> azerite_power_entry_t::data( bool ptr )
 {
 #if SC_USE_PTR == 1
-  const auto& data = ptr ? __ptr_azerite_power_data : __azerite_power_data;
+  const auto data = ptr ? arv::array_view<azerite_power_entry_t>( __ptr_azerite_power_data )
+                        : arv::array_view<azerite_power_entry_t>( __azerite_power_data );
 #else
   ( void ) ptr;
   const auto& data = __azerite_power_data;

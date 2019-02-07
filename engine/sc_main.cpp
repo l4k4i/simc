@@ -8,13 +8,6 @@
 #include "sim/sc_profileset.hpp"
 #include <locale>
 
-// ==========================================================================
-// Compiler Minimal Limit Deprecation Warning
-// Added here so that we only get 1 warning / build process
-// ==========================================================================
-#if defined( SC_GCC ) && SC_GCC < 50000
-#  warning "g++ below version 5 is deprecated for bfa-dev"
-#endif
 
 #ifdef SC_SIGACTION
 #include <csignal>
@@ -210,6 +203,17 @@ private:
   std::string _file_name;
 };
 
+#if !defined( SC_NO_NETWORKING )
+struct apitoken_initializer_t
+{
+  apitoken_initializer_t()
+  { bcp_api::token_load(); }
+
+  ~apitoken_initializer_t()
+  { bcp_api::token_save(); }
+};
+#endif
+
 struct special_effect_initializer_t
 {
   special_effect_initializer_t()
@@ -222,17 +226,17 @@ struct special_effect_initializer_t
   { unique_gear::unregister_special_effects(); }
 };
 
-/**
- * Print chained exceptions, separated by ' :'.
- */
-void print_exception(const std::exception& e, int level =  0)
+void print_version_info(const dbc_t& dbc)
 {
-  fmt::print(stderr, "{}{}", level > 0 ? ": " : "", e.what());
-  try {
-      std::rethrow_if_nested(e);
-  } catch(const std::exception& e) {
-      print_exception(e, level+1);
-  } catch(...) {}
+  std::string build_info = fmt::format("wow build {}", dbc.build_level());
+  if ( git_info::available() )
+  {
+    build_info += fmt::format(", git build {} {}", git_info::branch(), git_info::revision());
+  }
+
+  fmt::print("SimulationCraft {} for World of Warcraft {} {} ({})\n\n",
+      SC_VERSION, dbc.wow_version(), dbc.wow_ptr_status(), build_info);
+  std::flush(std::cout);
 }
 
 } // anonymous namespace ====================================================
@@ -244,24 +248,16 @@ int sim_t::main( const std::vector<std::string>& args )
   try
   {
     cache_initializer_t cache_init( get_cache_directory() + "/simc_cache.dat" );
+#if !defined( SC_NO_NETWORKING )
+    apitoken_initializer_t apitoken_init;
+#endif
     dbc_initializer_t dbc_init;
     module_t::init();
     unique_gear::register_hotfixes();
 
     special_effect_initializer_t special_effect_init;
 
-    // Print simc version info
-    if ( !git_info::available() )
-    {
-    util::printf("SimulationCraft %s for World of Warcraft %s %s (wow build %s)\n",
-        SC_VERSION, dbc.wow_version(), dbc.wow_ptr_status(), util::to_string(dbc.build_level()).c_str());
-    }
-    else
-    {
-    util::printf("SimulationCraft %s for World of Warcraft %s %s (wow build %s, git build %s %s)\n",
-        SC_VERSION, dbc.wow_version(), dbc.wow_ptr_status(), util::to_string(dbc.build_level()).c_str(), git_info::branch(), git_info::revision());
-    }
-    std::cout << std::endl;
+    print_version_info(dbc);
 
     sim_control_t control;
 
@@ -359,9 +355,10 @@ int sim_t::main( const std::vector<std::string>& args )
 
     return canceled;
   }
-  catch (const std::exception& e) {
+  catch (const std::nested_exception& e) {
+    // Only catch exception we have already re-thrown in init functions.
     std::cerr << "Error: ";
-    print_exception(e);
+    util::print_chained_exception(e.nested_ptr());
     std::cerr << std::endl;
     return 1;
   }

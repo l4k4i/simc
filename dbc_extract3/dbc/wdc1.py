@@ -10,6 +10,7 @@ from dbc import HeaderFieldInfo, DBCRecordInfo
 
 from dbc.parser import DBCParserBase
 
+X_BITPACKED  = 0x10
 X_ID_BLOCK   = 0x04
 X_OFFSET_MAP = 0x01
 
@@ -102,16 +103,9 @@ class WDC1HotfixKeyIdParser:
     def __init__(self, record_parser, unpack_bytes):
         self.record_parser = record_parser
         self.field_size = unpack_bytes
-
-        if unpack_bytes == 1:
-            self.unpacker = Struct('<B')
-        elif unpack_bytes == 2:
-            self.unpacker = Struct('<H')
-        elif unpack_bytes == 4:
-            self.unpacker = Struct('<I')
-        else:
-            raise ValueError('Invalid hotfix cache key field length {} for {}'.format(
-                unpack_bytes, record_parser.parser()))
+        self.u32 = Struct('<I')
+        self.u16 = Struct('<H')
+        self.u8 = Struct('<B')
 
     def __str__(self):
         return 'uint:key({})'.format(self.field_size * 8)
@@ -120,16 +114,17 @@ class WDC1HotfixKeyIdParser:
         return self.field_size
 
     def __call__(self, id, data, offset, bytes_left):
-        pad = bytes_left - self.field_size
+        if bytes_left == 4:
+            unpacker = self.u32
+        elif bytes_left == 3 or bytes_left == 2:
+            unpacker = self.u16
+        elif bytes_left == 1:
+            unpacker = self.u8
+        else:
+            raise ValueError('Unknown key field length {} in {}'.format(bytes_left,
+                self.record_parser.parser()))
 
-        if pad < 0:
-            raise ValueError('Negative pad: {} for {}'.format(pad, self.record_parser.parser()))
-
-        if bytes_left < self.unpacker.size:
-            raise ValueError('Too few bytes to parse, wanted {}, got {} for {}'.format(
-                self.unpacker.size, bytes_left, self.record_parser.parser()))
-
-        return self.unpacker.unpack_from(data, offset + pad)
+        return unpacker.unpack_from(data, offset)
 
 # Parse a segment of the record data, and return a tuple containing the column data
 class WDC1SegmentParser:
@@ -410,7 +405,6 @@ class RecordParser:
         self._hotfix_parser = hotfix
 
         self._n_records = parser.records
-        self._base_offset = parser.data_offset
         self._record_size = parser.record_size
         self._data = parser.data
 
@@ -423,10 +417,7 @@ class RecordParser:
         if self._record_id == self._n_records:
             raise StopIteration
 
-        # Base offset into the record start
-        base_offset = self._base_offset + self._record_id * self._record_size
-
-        self.__dbc_id, _, size, _ = self._parser.get_record_info(self._record_id)
+        self.__dbc_id, _, base_offset, size, _, _ = self._parser.get_record_info(self._record_id)
         self._record_id += 1
 
         # Byte offset into current record, incremented after each segment parser
@@ -780,8 +771,8 @@ class WDC1Column:
         if self.__block_type in [COLUMN_TYPE_BIT_S]:
             fields.append('signed=True')
 
-        if self.__block_type in [COLUMN_TYPE_ARRAY]:
-            fields.append('elements={:<2d}'.format(self.__elements))
+        if self.elements() > 1:
+            fields.append('elements={:<2d}'.format(self.elements()))
 
         if self.__block_type in [COLUMN_TYPE_SPARSE]:
             fields.append('default={}'.format(self.__default_value))
@@ -828,7 +819,7 @@ class WDC1Parser(DBCParserBase):
 
         # Lazy-computed key format for the foreign key values
         self.__key_format = None
-        self.__key_high = -1
+        self._key_high = -1
 
         # Id format
         self.__id_format = None
@@ -856,6 +847,8 @@ class WDC1Parser(DBCParserBase):
 
         # Column information
         self.column_info = []
+        # Column information for raw data
+        self.data_column_info = []
 
         # Sparse block data, preprocess if present so we can have fast lookups during parsing
         self.sparse_blocks = []
@@ -863,7 +856,7 @@ class WDC1Parser(DBCParserBase):
         # Foreign key block data, just a bunch of ids (on a per record basis)
         self.key_block = []
 
-    def get_string(self, offset, record_id, field_index):
+    def get_string(self, offset, dbc_id, field_index):
         if offset == 0:
             return None
 
@@ -875,30 +868,33 @@ class WDC1Parser(DBCParserBase):
         return self.data[self.string_block_offset + offset:end_offset].decode('utf-8')
 
     def get_record_info(self, record_id):
-        if record_id > len(self.id_table):
-            return DBCRecordInfo(-1, -1, 0, 0, 0)
+        if record_id > len(self.record_table):
+            return dbc.EMPTY_RECORD
 
-        record_info = self.id_table[record_id]
+        record_info = self.record_table[record_id]
         if record_info:
             return record_info
         else:
-            return DBCRecordInfo(-1, -1, 0, 0, 0)
+            return dbc.EMPTY_RECORD
 
     def get_dbc_info(self, dbc_id):
-        if dbc_id > len(self.dbc_id_table):
-            return DBCRecordInfo(-1, -1, 0, 0, 0)
+        if dbc_id > len(self.id_table):
+            return dbc.EMPTY_RECORD
 
-        record_info = self.dbc_id_table[dbc_id]
+        record_info = self.id_table[dbc_id]
         if record_info:
             return record_info
         else:
-            return DBCRecordInfo(-1, -1, 0, 0, 0)
+            return dbc.EMPTY_RECORD
 
     def get_record(self, dbc_id, offset, size):
         return self.record_parser(dbc_id, self.data, offset, size)
 
     def column(self, idx):
         return self.column_info[idx]
+
+    def data_column(self, idx ):
+        return self.data_column_info[idx]
 
     def id_format(self):
         if self.__id_format:
@@ -916,7 +912,7 @@ class WDC1Parser(DBCParserBase):
 
     # Bytes required for the foreign key, needed for hotfix cache to parse it out
     def key_bytes(self):
-        length = self.__key_high.bit_length()
+        length = self._key_high.bit_length()
         if length > 16:
             return 4
         elif length > 8:
@@ -927,13 +923,13 @@ class WDC1Parser(DBCParserBase):
     # Note, wdb_name is ignored, as WDC1 parsers are always bound to a single
     # wdb file (e.g., Spell.db2)
     def key_format(self):
-        if self.key_block_size == 0:
+        if not self.has_key_block():
             return '%u'
 
         if self.__key_format:
             return self.__key_format
 
-        n_digits = int(math.log10(self.__key_high) + 1)
+        n_digits = int(math.log10(self._key_high) + 1)
         self.__key_format = '%%%uu' % n_digits
         return self.__key_format
 
@@ -1040,8 +1036,8 @@ class WDC1Parser(DBCParserBase):
 
         logging.debug('Index for record in %s', column)
 
-        self.id_table = []
-        self.dbc_id_table = [ None ] * (self.last_id + 1)
+        self.record_table = []
+        self.id_table = [ None ] * (self.last_id + 1)
 
         # Start bit in the bytes that include the id column
         start_offset = column.field_bit_offset() % 8
@@ -1068,74 +1064,47 @@ class WDC1Parser(DBCParserBase):
 
             # Parse key block at this point too, so we can create full record information
             if self.has_key_block():
-                key_id, _ = _CLONE_INFO.unpack_from(self.data,
-                    self.key_block_offset + _WDC1_KEY_HEADER.size + _CLONE_INFO.size * record_id)
+                key_id = self.key_block[record_id]
             else:
                 key_id = 0
 
-            record_info = DBCRecordInfo(dbc_id, record_id, record_start, self.record_size, key_id)
-            self.id_table.append(record_info)
-            self.dbc_id_table[dbc_id] = record_info
+            record_info = DBCRecordInfo(dbc_id, record_id, record_start, self.record_size, key_id, -1)
+            self.record_table.append(record_info)
+            self.id_table[dbc_id] = record_info
 
         logging.debug('Parsed id information')
 
         return True
 
+    def parse_offset_map(self):
+        return True
+
     def parse_id_block(self):
-        self.id_table = []
-        self.dbc_id_table = [ None ] * (self.last_id + 1)
+        self.record_table = []
+        self.id_table = [ None ] * (self.last_id + 1)
 
-        # If there's an offset map, parse all relevant data from it
-        if self.has_offset_map():
-            for record_id in range(0, self.last_id - self.first_id + 1):
-                ofs = self.offset_map_offset + record_id * _ITEMRECORD.size
+        unpacker = Struct('%dI' % self.records)
+        record_id = 0
+        for dbc_id in unpacker.unpack_from(self.data, self.id_block_offset):
+            data_offset = 0
+            size = self.record_size
 
-                data_offset, size = _ITEMRECORD.unpack_from(self.data, ofs)
+            data_offset = self.data_offset + record_id * self.record_size
 
-                if data_offset == 0:
-                    continue
+            # If the db2 file has a key block, we need to grab the key at this
+            # point from the block, to record it into the data we have. Storing
+            # the information now associates with the correct dbc id, since the
+            # key block is record index based, not dbc id based.
+            if self.has_key_block():
+                key_id = self.key_block[record_id]
+            else:
+                key_id = 0
 
-                dbc_id = record_id + self.first_id
+            record_info = DBCRecordInfo(dbc_id, record_id, data_offset, size, key_id, -1)
+            self.record_table.append(record_info)
+            self.id_table[dbc_id] = record_info
 
-                # If the db2 file has a key block, we need to grab the key at this
-                # point from the block, to record it into the data we have. Storing
-                # the information now associates with the correct dbc id, since the
-                # key block is record index based, not dbc id based.
-                if self.has_key_block():
-                    key_id, _ = _CLONE_INFO.unpack_from(self.data,
-                        self.key_block_offset + _WDC1_KEY_HEADER.size + _CLONE_INFO.size * record_id)
-                else:
-                    key_id = 0
-
-                #print(ofs, data_offset, dbc_id, key_id, size)
-                record_info = DBCRecordInfo(dbc_id, record_id, data_offset, size, key_id)
-                self.id_table.append(record_info)
-                self.dbc_id_table[dbc_id] = record_info
-        else:
-            # Process ID block
-            unpacker = Struct('%dI' % self.records)
-            record_id = 0
-            for dbc_id in unpacker.unpack_from(self.data, self.id_block_offset):
-                data_offset = 0
-                size = self.record_size
-
-                data_offset = self.data_offset + record_id * self.record_size
-
-                # If the db2 file has a key block, we need to grab the key at this
-                # point from the block, to record it into the data we have. Storing
-                # the information now associates with the correct dbc id, since the
-                # key block is record index based, not dbc id based.
-                if self.has_key_block():
-                    key_id, _ = _CLONE_INFO.unpack_from(self.data,
-                        self.key_block_offset + _WDC1_KEY_HEADER.size + _CLONE_INFO.size * record_id)
-                else:
-                    key_id = 0
-
-                record_info = DBCRecordInfo(dbc_id, record_id, data_offset, size, key_id)
-                self.id_table.append(record_info)
-                self.dbc_id_table[dbc_id] = record_info
-
-                record_id += 1
+            record_id += 1
 
         logging.debug('Parsed id block')
 
@@ -1143,26 +1112,27 @@ class WDC1Parser(DBCParserBase):
 
     def parse_clone_block(self):
         # Cloned internal record id starts directly after the main data(?)
-        record_id = len(self.id_table) + 1
+        record_id = len(self.record_table) + 1
 
         # Process clones
         for clone_id in range(0, self.clone_block_size // _CLONE_INFO.size):
             clone_offset = self.clone_block_offset + clone_id * _CLONE_INFO.size
             target_id, source_id = _CLONE_INFO.unpack_from(self.data, clone_offset)
 
-            source = self.dbc_id_table[source_id]
+            source = self.id_table[source_id]
             if not source:
-                logging.error('Unable to find source data with dbc_id %d for cloning', source_id)
-                return False
+                logging.warn('Unable to find source data with dbc_id %d for cloning for id %d', source_id, target_id)
+                record_id += 1
+                continue
 
-            record_info = DBCRecordInfo(target_id, source.record_id, source.record_offset, source.record_size, source.parent_id)
-            self.id_table.append(record_info)
+            record_info = DBCRecordInfo(target_id, source.record_id, source.record_offset, source.record_size, source.parent_id, -1)
+            self.record_table.append(record_info)
 
             if target_id > self.last_id:
                 logging.error('Clone target id %d higher than last id %d', target_id, self.last_id)
                 return False
 
-            self.dbc_id_table[target_id] = record_info
+            self.id_table[target_id] = record_info
 
             record_id += 1
 
@@ -1186,6 +1156,9 @@ class WDC1Parser(DBCParserBase):
             offset += _WDC1_COLUMN_INFO.size
 
         logging.debug('Parsed extended column info block')
+
+        for column in self.column_info:
+            self.data_column_info += [ column ] * column.elements()
 
         return True
 
@@ -1240,16 +1213,16 @@ class WDC1Parser(DBCParserBase):
         offset += _WDC1_KEY_HEADER.size
 
         # Just make a sparse table for this
-        self.key_block = [ 0 ] * self.records
+        self.key_block = collections.defaultdict(lambda : 0)
 
         # Value, record id pairs
         unpacker = Struct('II')
-        for index in range(0, self.records):
+        for index in range(0, records):
             value, record_id = unpacker.unpack_from(self.data, offset + index * unpacker.size)
             self.key_block[record_id] = value
 
-            if value > self.__key_high:
-                self.__key_high = value
+            if value > self._key_high:
+                self._key_high = value
 
         logging.debug('%s parsed %u keys', self.full_name(), self.records)
 
@@ -1277,7 +1250,7 @@ class WDC1Parser(DBCParserBase):
         return self.key_block_size > 0
 
     def n_records(self):
-        return self.records > 0 and len(self.id_table) or 0
+        return self.records > 0 and len(self.record_table) or 0
 
     def build_parser(self):
         if self.options.raw:
@@ -1291,20 +1264,23 @@ class WDC1Parser(DBCParserBase):
         if self.has_extended_column_info_block() and not self.parse_extended_column_info_block():
             return False
 
-        if self.has_id_block() and not self.parse_id_block():
-            return False
-
-        if self.has_clone_block() and not self.parse_clone_block():
-            return False
-
         if self.has_sparse_block() and not self.parse_sparse_block():
             return False
 
-        if self.has_key_block() and not self.parse_key_block():
+        if not self.parse_key_block():
+            return False
+
+        if not self.parse_id_block():
+            return False
+
+        if not self.parse_clone_block():
             return False
 
         # If there is no ID block, generate a proxy ID block from actual record data
-        if not self.has_id_block() and not self.parse_id_data():
+        if not self.parse_id_data():
+            return False
+
+        if not self.parse_offset_map():
             return False
 
         return True

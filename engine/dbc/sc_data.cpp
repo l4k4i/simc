@@ -63,6 +63,8 @@ bool spell_data_t::override_field( const std::string& field, double value )
     _cast_max = ( int ) value;
   else if ( util::str_compare_ci( field, "rppm" ) )
     _rppm = value;
+  else if ( util::str_compare_ci( field, "dmg_class" ) )
+    _dmg_class = static_cast<unsigned>( value );
   else
     return false;
   return true;
@@ -124,8 +126,8 @@ spelleffect_data_nil_t spelleffect_data_nil_t::singleton;
 
 bool spelleffect_data_t::override_field( const std::string& field, double value )
 {
-  if ( util::str_compare_ci( field, "average" ) )
-    _m_avg = value;
+  if ( util::str_compare_ci( field, "coefficient" ) )
+    _m_coeff = value;
   else if ( util::str_compare_ci( field, "delta" ) )
     _m_delta = value;
   else if ( util::str_compare_ci( field, "bonus" ) )
@@ -161,8 +163,8 @@ bool spelleffect_data_t::override_field( const std::string& field, double value 
 
 double spelleffect_data_t::get_field( const std::string& field ) const
 {
-  if ( util::str_compare_ci( field, "average" ) )
-    return _m_avg;
+  if ( util::str_compare_ci( field, "coefficient" ) )
+    return _m_coeff;
   else if ( util::str_compare_ci( field, "delta" ) )
     return _m_delta;
   else if ( util::str_compare_ci( field, "bonus" ) )
@@ -350,7 +352,7 @@ spell_hotfix_entry_t& hotfix::register_spell( const std::string& group,
   auto  entry = new spell_hotfix_entry_t( group, tag, spell_id, note, flags );
   hotfixes_.push_back( entry );
 
-  std::sort( hotfixes_.begin(), hotfixes_.end(), hotfix_sorter_t() );
+  range::sort( hotfixes_, hotfix_sorter_t() );
 
   return *entry;
 }
@@ -371,7 +373,7 @@ effect_hotfix_entry_t& hotfix::register_effect( const std::string& group,
   auto  entry = new effect_hotfix_entry_t( group, tag, effect_id, note, flags );
   hotfixes_.push_back( entry );
 
-  std::sort( hotfixes_.begin(), hotfixes_.end(), hotfix_sorter_t() );
+  range::sort( hotfixes_, hotfix_sorter_t() );
 
   return *entry;
 }
@@ -392,7 +394,7 @@ power_hotfix_entry_t& hotfix::register_power( const std::string& group,
   auto  entry = new power_hotfix_entry_t( group, tag, power_id, note, flags );
   hotfixes_.push_back( entry );
 
-  std::sort( hotfixes_.begin(), hotfixes_.end(), hotfix_sorter_t() );
+  range::sort( hotfixes_, hotfix_sorter_t() );
 
   return *entry;
 }
