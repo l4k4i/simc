@@ -547,7 +547,8 @@ inline To as( From f )
   // is "safe" if (a) it's reversible, and
   assert( f == static_cast<From>( t ) );
   // (b) both values have the same sign.
-  assert( ( From() < f ) == ( To() < t ) );
+  //==FIX==
+  //  assert( ( From() < f ) == ( To() < t ) );
   return t;
 }
 

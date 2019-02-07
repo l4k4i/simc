@@ -947,7 +947,7 @@ void to_json( JsonOutput root, const sim_t& sim )
   }
 }
 
-void print_json_pretty( FILE* o, const sim_t& sim )
+void print_json_pretty( FILE* o, sim_t& sim )
 {
   Document doc;
   Value& v = doc;
@@ -972,11 +972,11 @@ void print_json_pretty( FILE* o, const sim_t& sim )
   {
     root[ "notifications" ] = sim.error_list;
   }
-
-  std::array<char, 16384> buffer;
-  FileWriteStream b( o, buffer.data(), buffer.size() );
-  PrettyWriter<FileWriteStream> writer( b );
+  //==FIX==
+  StringBuffer buffer;
+  PrettyWriter<StringBuffer> writer( buffer );
   auto accepted = doc.Accept( writer );
+  sim.dummyReport = buffer.GetString();
   if ( !accepted )
   {
     throw std::runtime_error("JSON Writer did not accept document.");
@@ -998,7 +998,7 @@ void print_json( sim_t& sim )
       sim.errorf( "Failed to open JSON output file '%s'.",
                   sim.json_file_str.c_str() );
       return;
-    }
+     }
 
     // Print JSON report
     try

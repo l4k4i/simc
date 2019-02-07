@@ -1,0 +1,452 @@
+[
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/simc.dir/engine/sc_main.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sc_main.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sc_main.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/xml.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/xml.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/xml.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/stopwatch.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/stopwatch.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/stopwatch.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/rng.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/rng.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/rng.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/io.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/io.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/io.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/concurrency.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/concurrency.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/concurrency.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/git_info.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/git_info.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/git_info.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/fmt/format.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/fmt/format.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/fmt/format.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/util/fmt/posix.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/util/fmt/posix.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/util/fmt/posix.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/x6_pantheon.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/x6_pantheon.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/x6_pantheon.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/spawner.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/spawner.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/spawner.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_sim.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_sim.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_sim.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_scaling.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_scaling.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_scaling.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_reforge_plot.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_reforge_plot.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_reforge_plot.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_raid_event.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_raid_event.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_raid_event.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_progress_bar.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_progress_bar.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_progress_bar.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_profileset.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_profileset.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_profileset.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_plot.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_plot.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_plot.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_option.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_option.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_option.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_gear_stats.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_gear_stats.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_gear_stats.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_expressions.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_expressions.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_expressions.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_event.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_event.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_event.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_core_sim.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_core_sim.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_core_sim.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sim/sc_cooldown.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_cooldown.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sim/sc_cooldown.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_report_text.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_text.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_text.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_report_json.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_json.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_json.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_report_html_sim.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_html_sim.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_html_sim.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_report_html_player.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_html_player.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report_html_player.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_report.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_report.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_highchart.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_highchart.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_highchart.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_gear_weights.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_gear_weights.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_gear_weights.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_color.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_color.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_color.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/report/sc_chart.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_chart.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/report/sc_chart.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_unique_gear_x6.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_unique_gear_x6.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_unique_gear_x6.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_unique_gear_x7.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_unique_gear_x7.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_unique_gear_x7.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_unique_gear.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_unique_gear.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_unique_gear.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_set_bonus.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_set_bonus.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_set_bonus.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_proc.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_proc.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_proc.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_player.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_player.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_player.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_pet.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_pet.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_pet.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_item.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_item.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_item.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_enchant.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_enchant.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_enchant.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/sc_consumable.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_consumable.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/sc_consumable.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/artifact_data.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/artifact_data.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/artifact_data.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/player/azerite_data.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/player/azerite_data.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/player/azerite_data.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/interfaces/sc_wowhead.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_wowhead.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_wowhead.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/interfaces/sc_js.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_js.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_js.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/interfaces/sc_http.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_http.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_http.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/interfaces/sc_bcp_api.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_bcp_api.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/interfaces/sc_bcp_api.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/sc_spell_info.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_spell_info.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_spell_info.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/sc_spell_data.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_spell_data.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_spell_data.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/sc_item_data_import_ptr.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_item_data_import_ptr.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_item_data_import_ptr.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/sc_item_data_import_noptr.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_item_data_import_noptr.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_item_data_import_noptr.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/sc_item_data.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_item_data.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_item_data.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/sc_data.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_data.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_data.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/sc_const_data.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_const_data.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/sc_const_data.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_warrior.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_warrior.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_warrior.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/warlock/sc_warlock.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/warlock/sc_warlock_affliction.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_affliction.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_affliction.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/warlock/sc_warlock_demonology.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_demonology.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_demonology.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/warlock/sc_warlock_destruction.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_destruction.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_destruction.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/warlock/sc_warlock_pets.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_pets.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/warlock/sc_warlock_pets.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_shaman.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_shaman.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_shaman.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_rogue.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_rogue.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_rogue.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/priest/sc_priest.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/priest/sc_priest_discipline.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest_discipline.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest_discipline.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/priest/sc_priest_holy.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest_holy.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest_holy.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/priest/sc_priest_shadow.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest_shadow.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/priest/sc_priest_shadow.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/paladin/sc_paladin.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/paladin/sc_paladin_retribution.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin_retribution.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin_retribution.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/paladin/sc_paladin_protection.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin_protection.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin_protection.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/paladin/sc_paladin_holy.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin_holy.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/paladin/sc_paladin_holy.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_monk.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_monk.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_monk.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_mage.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_mage.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_mage.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_hunter.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_hunter.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_hunter.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_enemy.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_enemy.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_enemy.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_druid.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_druid.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_druid.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_demon_hunter.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_demon_hunter.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_demon_hunter.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/class_modules/sc_death_knight.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_death_knight.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/class_modules/sc_death_knight.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/buff/sc_buff.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/buff/sc_buff.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/buff/sc_buff.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_stats.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_stats.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_stats.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_spell.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_spell.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_spell.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_sequence.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_sequence.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_sequence.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_dot.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_dot.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_dot.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_distance_targeting.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_distance_targeting.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_distance_targeting.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_attack.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_attack.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_attack.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_action_state.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_action_state.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_action_state.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/action/sc_action.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_action.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/action/sc_action.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/sc_util.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/sc_util.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/sc_util.cpp"
+},
+{
+  "directory": "/home/mherz/Code/Pogchamp/lib/simc/engine",
+  "command": "/home/mherz/Downloads/emsdk/emscripten/1.38.8/em++   -DSC_GIT_BRANCH=\\\"first\\\" -DSC_GIT_REV=\\\"8fbe8b6\\\" -DSC_NO_NETWORKING -DSC_NO_THREADING -I/home/mherz/Code/Pogchamp/lib/simc/engine/.    -Wall -Wextra -std=gnu++11 -o CMakeFiles/engine.dir/dbc/azerite.cpp.o -c /home/mherz/Code/Pogchamp/lib/simc/engine/dbc/azerite.cpp",
+  "file": "/home/mherz/Code/Pogchamp/lib/simc/engine/dbc/azerite.cpp"
+}
+]

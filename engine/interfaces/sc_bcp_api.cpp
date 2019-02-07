@@ -403,13 +403,16 @@ player_t* parse_player( sim_t*             sim,
   }
   else
   {
+    /*
     io::ifstream ifs;
     ifs.open( player.local_json );
     result.assign( ( std::istreambuf_iterator<char>( ifs ) ),
                    ( std::istreambuf_iterator<char>()    ) );
+    */
   }
-
-  profile.Parse< 0 >(result.c_str());
+  //=======FIX==========
+  profile.Parse< 0 >(sim->dummyProfile.c_str());
+  //profile.Parse< 0 >(result.c_str());
 
   if ( profile.HasParseError() )
   {

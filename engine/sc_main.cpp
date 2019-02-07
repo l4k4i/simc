@@ -20,7 +20,7 @@
 #include <csignal>
 #endif
 
-#define SC_DEFAULT_APIKEY a3b4nuat7fwxd4kd5uecd7gebabc4u9x
+#define SC_DEFAULT_APIKEY "a3b4nuat7fwxd4kd5uecd7gebabc4u9x"
 namespace { // anonymous namespace ==========================================
 
 #ifdef SC_SIGACTION
@@ -347,6 +347,7 @@ int sim_t::main( const std::vector<std::string>& args )
               else
                 {
                   report::print_suite( this );
+                  return 0;
                 }
             }
           else
@@ -378,21 +379,21 @@ int sim_t::main( const std::vector<std::string>& args )
 extern "C" {
 
   sim_t sim;
+  const char* callSimc( char* dummyProfile  )
+  {
+    sim.dummyProfile = dummyProfile;
+    int argc = 3;
+    char** argv;
+    argv[1]="armory=us,illidan,john";
+    argv[2]="json2=gu.json";
+    sim.main( io::utf8_args( argc, argv ) );
+    return sim.dummyReport.c_str();
+  }
+
   int main( int argc, char** argv )
   {
-     printf("SIMC WEB PORT 1.0\n");
-//     std::locale::global( std::locale( "C" ) );
-// #if defined( SC_VS ) && SC_VS < 13
-//     // Ensure unified scientific notation exponent rules between different VS versions
-//     _set_output_format( _TWO_DIGIT_EXPONENT );
-// #endif
+    printf("SIMC WEB PORT 1.1\n");
 
-//     sim_t sim;
-//     sim_signal_handler_t::global_sim = &sim;
-
-//     argc = 2;
-//     argv[1]="armory=us,illidan,john";
-//    return sim.main( io::utf8_args( argc, argv ) );
     std::locale::global( std::locale( "C" ) );
 #if defined( SC_VS ) && SC_VS < 13
     // Ensure unified scientific notation exponent rules between different VS versions
@@ -400,14 +401,7 @@ extern "C" {
 #endif
 
     sim_signal_handler_t::global_sim = &sim;
-
-     return 0;
+    return 0;
   }
 
-  int callSimc( int argc, char** argv  )
-  {
-    argc = 2;
-    argv[1]="armory=us,illidan,john";
-    return sim.main( io::utf8_args( argc, argv ) );
-  }
 }

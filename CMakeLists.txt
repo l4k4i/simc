@@ -8,6 +8,7 @@ option(BUILD_GUI "Build the Qt gui along with cli binary" OFF)
 # disable various features that may be anvailable or unneeded
 option(SC_NO_THREADING "Disable all dependencies on pthreads" ON)
 option(SC_NO_NETWORKING "Disable all networking related stuff." ON)
+option( SC_USE_OPENSSL  "Disable all networking related stuff." OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 

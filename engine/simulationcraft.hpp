@@ -930,6 +930,10 @@ struct event_manager_t
 
 struct sim_t : private sc_thread_t
 {
+  //=======FIX=======
+  std::string dummyProfile;
+  std::string dummyReport;
+  //=================
   event_manager_t event_mgr;
 
   // Output

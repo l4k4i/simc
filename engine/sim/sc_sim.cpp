@@ -466,7 +466,7 @@ bool parse_armory( sim_t*             sim,
       player_t* p;
       try
         {
-        if ( name == "local_json" )
+          if ( true /*name == "local_json"*/ )
           p = bcp_api::from_local_json( sim, player_name, stuff.server, description );
         else
           p = bcp_api::download_player( sim, stuff.region, stuff.server,
