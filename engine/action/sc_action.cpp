@@ -12,102 +12,33 @@
 namespace
 {  // anonymous namespace
 
-struct player_gcd_event_t : public player_event_t
-{
-  player_gcd_event_t( player_t& p, timespan_t delta_time ) : player_event_t( p, delta_time )
-  {
-    sim().print_debug("New Player-Ready-GCD Event: {}", p.name());
-  }
-
-  const char* name() const override
-  { return "Player-Ready-GCD"; }
-
-  void execute_action( action_t* a )
-  {
-    // Don't attempt to execute an off gcd action that's already being queued (this should not
-    // happen anyhow)
-    if ( !p()->queueing || ( p()->queueing->internal_id != a->internal_id ) )
-    {
-      auto queue_delay = a->cooldown->queue_delay();
-      // Don't queue the action if GCD would elapse before the action is usable again
-      if ( queue_delay == timespan_t::zero() ||
-           ( a->player->readying && sim().current_time() + queue_delay < a->player->readying->occurs() ) )
-      {
-        // If we're queueing something, it's something different from what we are about to do.
-        // Cancel existing queued (off gcd) action, and queue the new one.
-        if ( p()->queueing )
-        {
-          event_t::cancel( p()->queueing->queue_event );
-          p()->queueing = nullptr;
-        }
-        a->line_cooldown.start();
-        a->queue_execute( true );
-      }
-    }
-  }
-
-  void execute() override
-  {
-    p()->off_gcd = nullptr;
-
-    // It is possible to orchestrate events such that an action is currently executing when an
-    // off-gcd event occurs, if this is the case, don't do anything
-    if ( !p()->executing )
-    {
-      if ( p()->regen_type == REGEN_DYNAMIC )
-      {
-        p()->do_dynamic_regen();
-      }
-
-      p()->visited_apls_ = 0;
-
-      if ( action_t* a = p()->select_action( *p()->active_off_gcd_list, true ) )
-      {
-        execute_action( a );
-      }
-    }
-
-    // Create a new Off-GCD event only in the case we didnt find anything to queue (could use an
-    // ability right away) and the action we executed was not a run_action_list. Note also that an
-    // off-gcd event may have been created in do_off_gcd_execute() if this Player-Ready-GCD
-    // execution found an off gcd action to execute, in this case, do not create a new event.
-    if ( !p()->off_gcd && !p()->queueing && !p()->restore_action_list )
-    {
-      p()->off_gcd = make_event<player_gcd_event_t>( sim(), *p(), timespan_t::from_seconds( 0.1 ) );
-    }
-
-    if ( p()->restore_action_list != nullptr )
-    {
-      p()->activate_action_list( p()->restore_action_list, true );
-      p()->restore_action_list = nullptr;
-    }
-  }
-};
-
 /**
- * Hack to bypass some of the full execution chain to be able to re-use normal actions as "off gcd actions" (usable
- * during gcd). Will directly execute the action (instead of going through schedule_execute processing), and parts of
- * our execution chain where relevant (e.g., line cooldown, stats tracking).
+ * Hack to bypass some of the full execution chain to be able to re-use normal actions with
+ * specialized execution modes (off gcd, cast while casting). Will directly execute the action
+ * (instead of going through schedule_execute processing), and parts of our execution chain where
+ * relevant (e.g., line cooldown, stats tracking, gcd triggering for cast while casting).
  */
-void do_off_gcd_execute( action_t* action )
+void do_execute( action_t* action, execute_type type )
 {
-  action->execute();
-  action->line_cooldown.start();
   if ( !action->quiet )
   {
     action->player->iteration_executed_foreground_actions++;
     action->total_executions++;
     action->player->sequence_add( action, action->target, action->sim->current_time() );
   }
+  action->execute();
+  action->line_cooldown.start();
 
-  // If we executed a queued off-gcd action, we need to re-kick the player gcd event if there's
-  // still time to poll for new actions to use.
-  timespan_t interval = timespan_t::from_seconds( 0.1 );
-  if ( !action->player->off_gcd &&
-       action->sim->current_time() + interval < action->player->gcd_ready &&
-       action->player->off_gcd_ready < action->sim->current_time() )
+  // If the ability has a GCD, we need to start it
+  action->start_gcd();
+
+  if ( type == execute_type::OFF_GCD )
   {
-    action->player->off_gcd = make_event<player_gcd_event_t>( *action->sim, *action->player, interval );
+    action->player->schedule_off_gcd_ready( timespan_t::zero() );
+  }
+  else if ( type == execute_type::CAST_WHILE_CASTING )
+  {
+    action->player->schedule_cwc_ready( timespan_t::zero() );
   }
 
   if ( action->player->queueing == action )
@@ -119,17 +50,14 @@ void do_off_gcd_execute( action_t* action )
 struct queued_action_execute_event_t : public event_t
 {
   action_t* action;
-  bool off_gcd;
+  execute_type type;
 
-  queued_action_execute_event_t( action_t* a, const timespan_t& t, bool off_gcd )
-    : event_t( *a->sim, t ), action( a ), off_gcd( off_gcd )
-  {
-  }
+  queued_action_execute_event_t( action_t* a, const timespan_t& t, execute_type type_ )
+    : event_t( *a->sim, t ), action( a ), type( type_ )
+  { }
 
   const char* name() const override
-  {
-    return "Queued-Action-Execute";
-  }
+  { return "Queued-Action-Execute"; }
 
   void execute() override
   {
@@ -149,18 +77,35 @@ struct queued_action_execute_event_t : public event_t
     if ( action->cooldown->charges > 1 && action->cooldown->current_charge == 0 && action->cooldown->recharge_event &&
          action->cooldown->recharge_event->remains() == timespan_t::zero() )
     {
-      action->queue_event = make_event<queued_action_execute_event_t>( sim(), action, timespan_t::zero(), off_gcd );
+      action->queue_event = make_event<queued_action_execute_event_t>( sim(), action, timespan_t::zero(), type );
       // Note, processing ends here
       return;
     }
 
-    if ( off_gcd )
+    if ( type == execute_type::FOREGROUND )
     {
-      do_off_gcd_execute( action );
+      player_t* actor = action->player;
+      if ( !action->ready() || !action->target_ready( action->target ) )
+      {
+        if ( action->starved_proc )
+        {
+          action->starved_proc->occur();
+        }
+        actor->queueing = nullptr;
+        if ( !actor->readying )
+        {
+          actor->schedule_ready( actor->available() );
+        }
+      }
+      else
+      {
+        action->schedule_execute();
+      }
     }
+    // Other execute types are specialized, and need separate handling
     else
     {
-      action->schedule_execute();
+      do_execute( action, type );
     }
   }
 };
@@ -171,9 +116,11 @@ struct action_execute_event_t : public player_event_t
 {
   action_t* action;
   action_state_t* execute_state;
+  bool has_cast_time;
 
   action_execute_event_t( action_t* a, timespan_t time_to_execute, action_state_t* state = nullptr )
-    : player_event_t( *a->player, time_to_execute ), action( a ), execute_state( state )
+    : player_event_t( *a->player, time_to_execute ), action( a ), execute_state( state ),
+    has_cast_time( time_to_execute > timespan_t::zero() )
   {
     sim().print_debug( "New Action Execute Event: player='{}' action='{}' time_to_execute={} (target={}, marker={})",
         p()->name(), a->name(), time_to_execute, ( state ) ? state->target->name() : a->target->name(),
@@ -195,7 +142,7 @@ struct action_execute_event_t : public player_event_t
     }
   }
 
-  virtual void execute() override
+  void execute() override
   {
     player_t* target = action->target;
 
@@ -217,7 +164,11 @@ struct action_execute_event_t : public player_event_t
       action->pre_execute_state = 0;
     }
 
-    if ( !target->is_sleeping() )
+    // Note, presumes that if the action is instant, it will still be ready, since it was ready on
+    // the (near) previous event. Does check target sleepiness, since technically there can be
+    // several damage events on the same timestamp one of which will kill the target.
+    if ( ( has_cast_time && action->ready() && action->target_ready( target ) ) ||
+         !target->is_sleeping() )
     {
       // Action target must follow any potential pre-execute-state target if it differs from the
       // current (default) target of the action.
@@ -232,26 +183,26 @@ struct action_execute_event_t : public player_event_t
 
     if ( !p()->channeling )
     {
-      if (p()->readying)
+      if ( p()->readying )
       {
-        throw std::runtime_error(fmt::format("Non-channeling action '{}'is trying to overwrite "
-            "player-ready-event upon execute.", action->name()));
+        throw std::runtime_error( fmt::format( "Non-channeling action '{}' for actor {} is trying to overwrite "
+          "player-ready-event upon execute.", action->name(), p()->name() ) );
       }
 
       p()->schedule_ready( timespan_t::zero() );
     }
 
-    if ( p()->active_off_gcd_list == nullptr )
-      return;
-
-    // Kick off the during-gcd checker, first run is immediately after
-    event_t::cancel( p()->off_gcd );
-
-    if ( !p()->channeling &&
-         p()->gcd_ready > sim().current_time() &&
-         p()->off_gcd_ready <= sim().current_time() )
+    if ( p()->channeling )
     {
-      p()->off_gcd = make_event<player_gcd_event_t>( sim(), *p(), timespan_t::zero() );
+      p()->current_execute_type = execute_type::CAST_WHILE_CASTING;
+      p()->schedule_cwc_ready( timespan_t::zero() );
+    }
+    else if ( p()->gcd_ready > sim().current_time() )
+    {
+      // We are not channeling and there's still time left on GCD.
+      p()->current_execute_type = execute_type::OFF_GCD;
+      assert( p()->off_gcd == nullptr );
+      p()->schedule_off_gcd_ready( timespan_t::zero() );
     }
   }
 };
@@ -352,6 +303,7 @@ action_t::options_t::options_t()
     target_if_str(),
     interrupt_if_expr_str(),
     early_chain_if_expr_str(),
+    cancel_if_expr_str(),
     sync_str(),
     target_str()
 {
@@ -380,6 +332,8 @@ action_t::action_t( action_e ty, const std::string& token, player_t* p, const sp
     quiet(),
     background(),
     use_off_gcd(),
+    use_while_casting(),
+    usable_while_casting( false ),
     interrupt_auto_attack( true ),
     ignore_false_positive(),
     action_skill( p->base.skill ),
@@ -475,6 +429,7 @@ action_t::action_t( action_e ty, const std::string& token, player_t* p, const sp
     target_if_expr(),
     interrupt_if_expr(),
     early_chain_if_expr(),
+    cancel_if_expr( nullptr ),
     sync_action(),
     signature_str(),
     target_specific_dot( false ),
@@ -548,6 +503,7 @@ action_t::action_t( action_e ty, const std::string& token, player_t* p, const sp
   add_option( opt_string( "if", option.if_expr_str ) );
   add_option( opt_string( "interrupt_if", option.interrupt_if_expr_str ) );
   add_option( opt_string( "early_chain_if", option.early_chain_if_expr_str ) );
+  add_option( opt_string( "cancel_if", option.cancel_if_expr_str ) );
   add_option( opt_bool( "interrupt", option.interrupt ) );
   add_option( opt_bool( "interrupt_global", interrupt_global ) );
   add_option( opt_bool( "chain", option.chain ) );
@@ -564,6 +520,8 @@ action_t::action_t( action_e ty, const std::string& token, player_t* p, const sp
   // Interrupt_immediate forces a channeled action to interrupt on tick (if requested), even if the
   // GCD has not elapsed.
   add_option( opt_bool( "interrupt_immediate", option.interrupt_immediate ) );
+  add_option( opt_bool( "use_off_gcd", use_off_gcd ) );
+  add_option( opt_bool( "use_while_casting", use_while_casting ) );
 }
 
 action_t::~action_t()
@@ -574,6 +532,7 @@ action_t::~action_t()
   delete target_if_expr;
   delete interrupt_if_expr;
   delete early_chain_if_expr;
+  delete cancel_if_expr;
 
   while ( state_cache != 0 )
   {
@@ -861,9 +820,9 @@ void action_t::parse_options( const std::string& options_str )
 
 bool action_t::verify_actor_level() const
 {
-  if ( data().id() && !data().is_level( player->true_level ) && data().level() <= MAX_LEVEL )
+  if ( ! background && data().id() && !data().is_level( player->true_level ) && data().level() <= MAX_LEVEL )
   {
-    sim->errorf( "Player %s attempting to execute action %s without the required level (%d < %d).\n", player->name(),
+    sim->errorf( "Player %s attempting to use action %s without the required level (%d < %d).\n", player->name(),
                  name(), player->true_level, data().level() );
     return false;
   }
@@ -880,8 +839,55 @@ bool action_t::verify_actor_spec() const
   {
     // Note that this check can produce false positives for talent abilities which have a different spec set in their
     // talent data from that in the spell data pointed to.
-    sim->errorf( "Player %s attempting to execute action %s without the required spec.\n", player->name(), name() );
+    sim->errorf( "Player %s attempting to use action %s without the required spec.\n", player->name(), name() );
 
+    return false;
+  }
+
+  return true;
+}
+
+bool action_t::verify_actor_weapon() const
+{
+  if ( !data().ok() || data().equipped_class() != ITEM_CLASS_WEAPON )
+  {
+    return true;
+  }
+
+  auto mask = data().equipped_subclass_mask();
+  if ( data().flags( spell_attribute::SX_REQ_MAIN_HAND ) &&
+       !( mask & ( 1 << util::translate_weapon( player->main_hand_weapon.type ) ) ) )
+  {
+    std::vector<std::string> types;
+    for ( auto wt = ITEM_SUBCLASS_WEAPON_AXE; wt < ITEM_SUBCLASS_WEAPON_FISHING_POLE; ++wt )
+    {
+      if ( data().equipped_subclass_mask() & ( 1 << static_cast<unsigned>( wt ) ) )
+      {
+        types.push_back( util::weapon_subclass_string( wt ) );
+      }
+    }
+    sim->errorf( "Player %s attempting to use action %s without the required main-hand weapon "
+                 "(requires %s, wielded %s).\n",
+      player->name(), name(), util::string_join( types ).c_str(),
+      util::weapon_subclass_string( util::translate_weapon( player->main_hand_weapon.type ) ) );
+    return false;
+  }
+
+  if ( data().flags( spell_attribute::SX_REQ_OFF_HAND ) &&
+       !( mask & ( 1 << util::translate_weapon( player->off_hand_weapon.type ) ) ) )
+  {
+    std::vector<std::string> types;
+    for ( auto wt = ITEM_SUBCLASS_WEAPON_AXE; wt < ITEM_SUBCLASS_WEAPON_FISHING_POLE; ++wt )
+    {
+      if ( data().equipped_subclass_mask() & ( 1 << static_cast<unsigned>( wt ) ) )
+      {
+        types.push_back( util::weapon_subclass_string( wt ) );
+      }
+    }
+    sim->errorf( "Player %s attempting to use action %s without the required off-hand weapon "
+                 "(requires %s, wielded %s).\n",
+      player->name(), name(), util::string_join( types ).c_str(),
+      util::weapon_subclass_string( util::translate_weapon( player->off_hand_weapon.type ) ) );
     return false;
   }
 
@@ -1153,8 +1159,6 @@ double action_t::calculate_direct_amount( action_state_t* state ) const
   double base_direct_amount = amount;
   double weapon_amount      = 0;
 
-  amount += bonus_da( state );
-
   if ( weapon_multiplier > 0 )
   {
     // x% weapon damage + Y
@@ -1165,7 +1169,6 @@ double action_t::calculate_direct_amount( action_state_t* state ) const
   }
   amount += spell_direct_power_coefficient( state ) * ( state->composite_spell_power() );
   amount += attack_direct_power_coefficient( state ) * ( state->composite_attack_power() );
-  amount *= state->composite_da_multiplier();
 
   // OH penalty, this applies to any OH attack even if is not based on weapon damage
   double weapon_slot_modifier = 1.0;
@@ -1175,6 +1178,12 @@ double action_t::calculate_direct_amount( action_state_t* state ) const
     amount *= weapon_slot_modifier;
     weapon_amount *= weapon_slot_modifier;
   }
+
+  // Apply bonus direct damage after the off-hand penalty as this seems to be the common case in
+  // game
+  amount += bonus_da( state );
+
+  amount *= state->composite_da_multiplier();
 
   // damage variation in WoD is based on the delta field in the spell data, applied to entire amount
   double delta_mod = amount_delta_modifier( state );
@@ -1239,6 +1248,11 @@ double action_t::calculate_direct_amount( action_state_t* state ) const
 
   if ( !sim->average_range )
     amount = floor( amount + rng().real() );
+
+  if ( amount < 0 )
+  {
+    amount = 0;
+  }
 
   sim->print_debug(
       "{} direct amount for {}: amount={} initial_amount={} weapon={} base={} s_mod={} s_power={} "
@@ -1470,6 +1484,7 @@ void action_t::execute()
   {
     std::vector<player_t*>& tl = target_list();
     num_targets                = ( n_targets() < 0 ) ? tl.size() : std::min( tl.size(), as<size_t>( n_targets() ) );
+
     for ( size_t t = 0, max_targets = tl.size(); t < num_targets && t < max_targets; t++ )
     {
       action_state_t* s = get_state( pre_execute_state );
@@ -1532,6 +1547,11 @@ void action_t::execute()
 
   if ( pre_execute_state )
     action_state_t::release( pre_execute_state );
+
+  if ( data().id() )
+  {
+    expansion::bfa::trigger_leyshocks_grand_compilation( data().id(), player );
+  }
 
   // The rest of the execution depends on actually executing on target. Note that execute_state
   // can be nullptr if there are not valid targets to hit on.
@@ -1676,8 +1696,20 @@ void action_t::last_tick( dot_t* d )
 
   if ( channeled && player->channeling == this )
   {
-    player->channeling = 0;
-    player->readying   = 0;
+    player->channeling = nullptr;
+
+    // Retarget this channel skill, since during the channel a retargeting event may have occurred.
+    // The comparison is made against the actor's "current target", which can be considered the
+    // current baseline target all actions share (with some exceptions, such as fixed targeting).
+    if ( option.target_number == 0 && target != player->target )
+    {
+      if ( sim->debug )
+      {
+        sim->out_debug.print( "{} adjust channel target on last tick, current={}, new={}",
+          player->name(), target->name(), player->target->name() );
+      }
+      target = player->target;
+    }
   }
 }
 
@@ -1711,35 +1743,70 @@ void action_t::record_data( action_state_t* data )
 // player_t::execute_action() ). Background actions should (and are) directly call
 // action_t::schedule_execute. Off gcd actions will either directly execute the action, or schedule
 // a queued off-gcd execution.
-void action_t::queue_execute( bool off_gcd )
+void action_t::queue_execute( execute_type type )
 {
   auto queue_delay = cooldown->queue_delay();
   if ( queue_delay > timespan_t::zero() )
   {
-    queue_event      = make_event<queued_action_execute_event_t>( *sim, this, queue_delay, off_gcd );
+    queue_event      = make_event<queued_action_execute_event_t>( *sim, this, queue_delay, type );
     player->queueing = this;
   }
   else
   {
-    if ( off_gcd )
+    if ( type == execute_type::FOREGROUND )
+    {
+      schedule_execute();
+    }
+    else
     {
       // If the charge cooldown is recharging on the same timestamp, we need to create a zero-time
       // event to execute the (queued) action, so that the charge cooldown can regenerate.
       if ( cooldown->charges > 1 && cooldown->current_charge == 0 && cooldown->recharge_event &&
            cooldown->recharge_event->remains() == timespan_t::zero() )
       {
-        queue_event      = make_event<queued_action_execute_event_t>( *sim, this, timespan_t::zero(), off_gcd );
+        queue_event      = make_event<queued_action_execute_event_t>( *sim, this, timespan_t::zero(), type );
         player->queueing = this;
       }
       else
       {
-        do_off_gcd_execute( this );
+        do_execute( this, type );
       }
     }
-    else
-    {
-      schedule_execute();
-    }
+  }
+}
+
+void action_t::start_gcd()
+{
+  auto current_gcd = gcd();
+  if ( current_gcd == timespan_t::zero() )
+  {
+    return;
+  }
+
+  // Setup the GCD ready time, and associated haste-related values
+  player->gcd_ready      = sim->current_time() + current_gcd;
+  player->gcd_haste_type = gcd_haste;
+  switch ( gcd_haste )
+  {
+    case HASTE_SPELL:
+      player->gcd_current_haste_value = player->cache.spell_haste();
+      break;
+    case HASTE_ATTACK:
+      player->gcd_current_haste_value = player->cache.attack_haste();
+      break;
+    case SPEED_SPELL:
+      player->gcd_current_haste_value = player->cache.spell_speed();
+      break;
+    case SPEED_ATTACK:
+      player->gcd_current_haste_value = player->cache.attack_speed();
+      break;
+    default:
+      break;
+  }
+
+  if ( player->action_queued && sim->strict_gcd_queue )
+  {
+    player->gcd_ready -= sim->queue_gcd_reduction;
   }
 }
 
@@ -1767,30 +1834,14 @@ void action_t::schedule_execute( action_state_t* execute_state )
     }
 
     player->executing = this;
-    // Setup the GCD ready time, and associated haste-related values
-    player->gcd_ready      = sim->current_time() + gcd();
-    player->gcd_haste_type = gcd_haste;
-    switch ( gcd_haste )
-    {
-      case HASTE_SPELL:
-        player->gcd_current_haste_value = player->cache.spell_haste();
-        break;
-      case HASTE_ATTACK:
-        player->gcd_current_haste_value = player->cache.attack_haste();
-        break;
-      case SPEED_SPELL:
-        player->gcd_current_haste_value = player->cache.spell_speed();
-        break;
-      case SPEED_ATTACK:
-        player->gcd_current_haste_value = player->cache.attack_speed();
-        break;
-      default:
-        break;
-    }
 
-    if ( player->action_queued && sim->strict_gcd_queue )
+    start_gcd();
+
+    if ( time_to_execute > timespan_t::zero() )
     {
-      player->gcd_ready -= sim->queue_gcd_reduction;
+      player->current_execute_type = execute_type::CAST_WHILE_CASTING;
+      assert( player->cast_while_casting_poll_event == nullptr );
+      player->schedule_cwc_ready( timespan_t::zero() );
     }
 
     if ( special && time_to_execute > timespan_t::zero() && !proc && interrupt_auto_attack )
@@ -1907,37 +1958,25 @@ bool action_t::usable_moving() const
   return true;
 }
 
-bool action_t::ready()
+bool action_t::target_ready( player_t* candidate_target )
 {
-  // Check conditions that do NOT pertain to the target before cycle_targets
-  if ( cooldown->is_ready() == false )
+  // Ensure target is valid to execute on
+  if ( candidate_target->is_sleeping() )
     return false;
 
-  if ( internal_cooldown->down() )
+  if ( candidate_target->debuffs.invulnerable &&
+       candidate_target->debuffs.invulnerable->check() && harmful )
     return false;
 
-  if ( rng().roll( false_negative_pct() ) )
+  if ( sim->distance_targeting_enabled && range > 0 &&
+       player->get_player_distance( *candidate_target ) > range + candidate_target->combat_reach )
     return false;
 
-  if ( line_cooldown.down() )
-    return false;
+  return true;
+}
 
-  if ( sync_action && !sync_action->ready() )
-    return false;
-
-  if ( player->is_moving() && !usable_moving() )
-    return false;
-
-  if ( option.moving != -1 && option.moving != ( player->is_moving() ? 1 : 0 ) )
-    return false;
-
-  if ( !player->resource_available( current_resource(), cost() ) )
-  {
-    if ( starved_proc )
-      starved_proc->occur();
-    return false;
-  }
-
+bool action_t::select_target()
+{
   if ( target_if_mode != TARGET_IF_NONE )
   {
     player_t* potential_target = select_target_if_target();
@@ -1945,7 +1984,7 @@ bool action_t::ready()
     {
       // If the target changes, we need to regenerate the target cache to get the new primary target
       // as the first element of target_list. Only do this for abilities that are aoe.
-      if ( n_targets() > 1 && potential_target != target )
+      if ( is_aoe() && potential_target != target )
       {
         target_cache.is_valid = false;
       }
@@ -1979,7 +2018,7 @@ bool action_t::ready()
     for ( size_t i = 0; i < num_targets; i++ )
     {
       target = ctl[ i ];
-      if ( ready() )
+      if ( action_ready() )
       {
         found_ready = true;
         break;
@@ -2020,7 +2059,7 @@ bool action_t::ready()
     for ( size_t i = 0; i < num_targets; i++ )
     {
       target = tl[ i ];
-      if ( ready() )
+      if ( action_ready() )
       {
         found_ready = true;
         break;
@@ -2048,7 +2087,7 @@ bool action_t::ready()
     bool is_ready = false;
 
     if ( target )
-      is_ready = ready();
+      is_ready = action_ready();
 
     option.target_number = saved_target_number;
 
@@ -2060,24 +2099,102 @@ bool action_t::ready()
     return false;
   }
 
-  if ( sim->distance_targeting_enabled && range > 0 &&
-       player->get_player_distance( *target ) > range + target->combat_reach )
+  // Normal casting (no cycle_targets, cycle_players, target_number, or target_if specified). Check
+  // that we can cast on the target
+  if ( !target_ready( target ) )
+  {
     return false;
+  }
 
-  if ( target->debuffs.invulnerable && target->debuffs.invulnerable->check() && harmful )
-    return false;
+  return true;
+}
 
-  if ( target->is_sleeping() )
+bool action_t::action_ready()
+{
+  // Check that the ability itself is usable, before going on to other user-input related readiness
+  // checks. Note, no target-based stuff should be done here
+  if ( !ready() )
+  {
     return false;
+  }
+
+  // Can't find any target to cast on
+  if ( !select_target() )
+  {
+    return false;
+  }
+
+  // If cycle_targets was used, then we know that the ability is already usable, no need to test the
+  // rest of the readiness
+  if ( option.cycle_targets && sim->target_non_sleeping_list.size() > 1 )
+  {
+    return true;
+  }
+
+  if ( action_skill != 1 || player->current.skill_debuff != 0 )
+  {
+    if ( rng().roll( false_positive_pct() ) )
+      return true;
+
+    if ( rng().roll( false_negative_pct() ) )
+      return false;
+  }
 
   if ( !has_movement_directionality() )
     return false;
 
-  if ( rng().roll( false_positive_pct() ) )
-    return true;
+  if ( line_cooldown.down() )
+    return false;
+
+  if ( sync_action && !sync_action->action_ready() )
+    return false;
+
+  if ( option.moving != -1 && option.moving != ( player->is_moving() ? 1 : 0 ) )
+    return false;
 
   if ( if_expr && !if_expr->success() )
     return false;
+
+  return true;
+}
+
+// Properties that govern if the spell itself is executable, without considering any kind of user
+// options
+bool action_t::ready()
+{
+  // Check conditions that do NOT pertain to the target before cycle_targets
+  if ( cooldown->is_ready() == false )
+    return false;
+
+  if ( internal_cooldown->down() )
+    return false;
+
+  if ( player->is_moving() && !usable_moving() )
+    return false;
+
+  auto resource = current_resource();
+  if ( resource != RESOURCE_NONE && !player->resource_available( resource, cost() ) )
+  {
+    if ( starved_proc )
+      starved_proc->occur();
+    return false;
+  }
+
+  if ( usable_while_casting )
+  {
+    if ( execute_time() > timespan_t::zero() )
+    {
+      return false;
+    }
+
+    // Don't allow cast-while-casting spells that trigger the GCD to be ready if the GCD is still
+    // ongoing (during the cast)
+    if ( ( player->executing || player->channeling ) && gcd() > timespan_t::zero() &&
+         player->gcd_ready > sim->current_time() )
+    {
+      return false;
+    }
+  }
 
   return true;
 }
@@ -2087,7 +2204,7 @@ void action_t::init()
   if ( initialized )
     return;
 
-  if ( !verify_actor_level() || !verify_actor_spec() )
+  if ( !verify_actor_level() || !verify_actor_spec() || !verify_actor_weapon() )
   {
     background = true;
   }
@@ -2253,6 +2370,29 @@ void action_t::init()
     get_dot( target );
   }
 
+  // Make sure spells that have GCD shorter than the global min GCD trigger
+  // the correct (short) GCD.
+  min_gcd = std::min( min_gcd, trigger_gcd );
+
+  if ( use_off_gcd && trigger_gcd == timespan_t::zero() )
+  {
+    cooldown->add_execute_type( execute_type::OFF_GCD );
+    internal_cooldown->add_execute_type( execute_type::OFF_GCD );
+  }
+
+  if ( usable_while_casting && use_while_casting )
+  {
+    cooldown->add_execute_type( execute_type::CAST_WHILE_CASTING );
+    internal_cooldown->add_execute_type( execute_type::CAST_WHILE_CASTING );
+  }
+
+  // Normal foreground actions get marked too, unused for now though
+  if ( cooldown->execute_types_mask == 0 && !background )
+  {
+    cooldown->add_execute_type( execute_type::FOREGROUND );
+    internal_cooldown->add_execute_type( execute_type::FOREGROUND );
+  }
+
   // Make sure background is set for triggered actions.
   // Leads to double-readying of the player otherwise.
   assert( ( !execute_action || execute_action->background ) && "Execute action needs to be set to background." );
@@ -2302,6 +2442,13 @@ void action_t::init_finished()
     }
   }
 
+  // Collect this object into a list of dynamic targeting actions so they can be managed separate of
+  // the total action object list
+  if ( option.cycle_targets || target_if_expr )
+  {
+    player->dynamic_target_action_list.insert( this );
+  }
+
   if ( !option.if_expr_str.empty() )
   {
     if_expr = expr_t::parse( this, option.if_expr_str, sim->optimize_expressions );
@@ -2326,6 +2473,16 @@ void action_t::init_finished()
     if ( early_chain_if_expr == 0 )
     {
       throw std::invalid_argument(fmt::format("Could not parse chain if expression from '{}'", option.early_chain_if_expr_str));
+    }
+  }
+
+  if ( !option.cancel_if_expr_str.empty() )
+  {
+    cancel_if_expr = expr_t::parse( this, option.cancel_if_expr_str, sim->optimize_expressions );
+    if ( cancel_if_expr == nullptr )
+    {
+      throw std::invalid_argument( fmt::format( "Could not parse cancel if expression from '{}'",
+            option.cancel_if_expr_str ) );
     }
   }
 }
@@ -2358,6 +2515,8 @@ void action_t::reset()
         {
           action_list->foreground_action_list.erase( i );
         }
+
+        player->dynamic_target_action_list.erase( this );
       }
     }
     if ( target_if_expr )
@@ -2366,6 +2525,8 @@ void action_t::reset()
       interrupt_if_expr = interrupt_if_expr->optimize();
     if ( early_chain_if_expr )
       early_chain_if_expr = early_chain_if_expr->optimize();
+    if ( cancel_if_expr )
+      cancel_if_expr = cancel_if_expr->optimize();
   }
 }
 
@@ -2412,39 +2573,28 @@ void action_t::interrupt_action()
   if ( sim->debug )
     sim->out_debug.printf( "action %s of %s is interrupted", name(), player->name() );
 
-  // Don't start cooldown if we're queueing this action
-  if ( !player->queueing && cooldown->duration > timespan_t::zero() && !dual )
-  {
-    if ( sim->debug )
-      sim->out_debug.printf( "%s starts cooldown for %s (%s)", player->name(), name(), cooldown->name() );
-
-    // Cooldown must be usable to start it. TODO: Is this really right? Interrupting a cooldowned
-    // cast should not start the cooldown, imo?
-    if ( cooldown->up() )
-    {
-      cooldown->start( this );
-    }
-  }
-
-  // Don't start internal cooldown if we're queueing this action
-  if ( !player->queueing && internal_cooldown->duration > timespan_t::zero() && !dual )
-  {
-    if ( sim->debug )
-      sim->out_debug.printf( "%s starts internal_cooldown for %s (%s)", player->name(), name(),
-                             internal_cooldown->name() );
-
-    internal_cooldown->start( this );
-  }
-
   if ( player->executing == this )
     player->executing = nullptr;
   if ( player->queueing == this )
     player->queueing = nullptr;
   if ( player->channeling == this )
   {
+    // Forcefully interrupting a channel should not incur the channel lag.
+    interrupt_immediate_occurred = true;
+
     dot_t* dot = get_dot( execute_state->target );
     assert( dot->is_ticking() );
     dot->cancel();
+  }
+
+  if ( !background && execute_event )
+  {
+    // Interrupting a cast resets GCD, allowing the player to start doing
+    // something else right away. The delay between interrupting a cast
+    // and starting a new cast seems to be twice the current latency.
+    timespan_t lag        = player->world_lag_override        ? player->world_lag        : sim->world_lag;
+    timespan_t lag_stddev = player->world_lag_stddev_override ? player->world_lag_stddev : sim->world_lag_stddev;
+    player->gcd_ready = std::min( player->gcd_ready, sim->current_time() + 2 * rng().gauss( lag, lag_stddev ) );
   }
 
   event_t::cancel( execute_event );
@@ -2649,7 +2799,7 @@ expr_t* action_t::create_expression( const std::string& name_str )
     return new new_tick_time_expr_t( *this );
   }
 
-  if ( expr_t* q = dot_t::create_expression( nullptr, this, name_str, true ) )
+  if ( expr_t* q = dot_t::create_expression( nullptr, this, this, name_str, true ) )
     return q;
 
   if ( name_str == "miss_react" )
@@ -2821,9 +2971,65 @@ expr_t* action_t::create_expression( const std::string& name_str )
     return expr_t::create_constant( name_str, data().found() );
   }
 
+  if ( name_str == "casting" )
+  {
+    return make_fn_expr( name_str, [ this ] ()
+    {
+      return player->executing && player->executing->execute_event && player->executing->internal_id == internal_id;
+    } );
+  }
+
+  if ( name_str == "cast_remains" )
+  {
+    return make_fn_expr( name_str, [ this ] ()
+    {
+      if ( player->executing && player->executing->execute_event && player->executing->internal_id == internal_id )
+        return player->executing->execute_event->remains().total_seconds();
+
+      return 0.0;
+    } );
+  }
+
+  if ( name_str == "channeling" )
+  {
+    return make_fn_expr( name_str, [ this ] ()
+    {
+      return player->channeling && player->channeling->internal_id == internal_id;
+    } );
+  }
+
+  if ( name_str == "channel_remains" )
+  {
+    return make_fn_expr( name_str, [ this ] ()
+    {
+      if ( player->channeling && player->channeling->internal_id == internal_id )
+        return player->channeling->get_dot()->remains().total_seconds();
+
+      return 0.0;
+    } );
+  }
+
   if ( name_str == "executing" )
   {
-    return make_fn_expr( name_str, [this]() { return execute_event != nullptr; } );
+    return make_fn_expr( name_str, [ this ] ()
+    {
+      action_t* current_action = player->executing ? player->executing : player->channeling;
+      return current_action && current_action->internal_id == internal_id;
+    } );
+  }
+
+  if ( name_str == "execute_remains" )
+  {
+    return make_fn_expr( name_str, [ this ] ()
+    {
+      if ( player->executing && player->executing->execute_event && player->executing->internal_id == internal_id )
+        return player->executing->execute_event->remains().total_seconds();
+
+      if ( player->channeling && player->channeling->internal_id == internal_id )
+        return player->channeling->get_dot()->remains().total_seconds();
+
+      return 0.0;
+    } );
   }
 
   std::vector<std::string> splits = util::string_split( name_str, "." );
@@ -3021,8 +3227,16 @@ expr_t* action_t::create_expression( const std::string& name_str )
       return new spell_targets_t( *this, splits.size() > 1 ? splits[ 1 ] : this->name_str );
     }
     else
-    {  // If distance targeting is not enabled, default to active_enemies behavior.
-      return make_ref_expr( name_str, sim->active_enemies );
+    {
+      if ( sim->target_list.size() == 1u && !raid_event_t::has_raid_event( sim, "adds" ) )
+      {
+        return expr_t::create_constant( "spell_targets", 1.0 );
+      }
+      else
+      {
+        // If distance targeting is not enabled, default to active_enemies behavior.
+        return make_ref_expr( name_str, sim->active_enemies );
+      }
     }
   }
 
@@ -3069,7 +3283,7 @@ expr_t* action_t::create_expression( const std::string& name_str )
       return expr_t::create_constant( splits[ 2 ], 0 );
     }
 
-    auto expr = dot_t::create_expression(nullptr, action, splits[ 2 ], true );
+    auto expr = dot_t::create_expression(nullptr, action, this, splits[ 2 ], true );
     if ( expr )
     {
       return expr;
@@ -3083,7 +3297,7 @@ expr_t* action_t::create_expression( const std::string& name_str )
   if ( splits.size() == 3 && splits[ 0 ] == "enemy_dot" )
   {
     // simple by-pass to test
-    auto dt_ = dot_t::create_expression( player->get_dot( splits[ 1 ], target ), this, splits[ 2 ], false );
+    auto dt_ = dot_t::create_expression( player->get_dot( splits[ 1 ], target ), this, this, splits[ 2 ], false );
     if ( dt_ )
       return dt_;
 
@@ -3092,7 +3306,7 @@ expr_t* action_t::create_expression( const std::string& name_str )
     for ( size_t i = 0, size = sim->target_list.size(); i < size; i++ )
     {
       dot_t* d = player->get_dot( splits[ 1 ], sim->target_list[ i ] );
-      dot_expressions.push_back( dot_t::create_expression( d, this, splits[ 2 ], false ) );
+      dot_expressions.push_back( dot_t::create_expression( d, this, this, splits[ 2 ], false ) );
     }
     struct enemy_dots_expr_t : public expr_t
     {
@@ -3216,17 +3430,19 @@ expr_t* action_t::create_expression( const std::string& name_str )
   }
 
   if ( ( splits.size() == 3 && splits[ 0 ] == "action" ) || splits[ 0 ] == "in_flight" ||
-       splits[ 0 ] == "in_flight_to_target" )
+       splits[ 0 ] == "in_flight_to_target" || splits[ 0 ] == "in_flight_remains" )
   {
     std::vector<action_t*> in_flight_list;
-    bool in_flight_singleton = ( splits[ 0 ] == "in_flight" || splits[ 0 ] == "in_flight_to_target" );
+    bool in_flight_singleton = ( splits[ 0 ] == "in_flight" ||
+      splits[ 0 ] == "in_flight_to_target" || splits[ 0 ] == "in_flight_remains" );
     std::string action_name  = ( in_flight_singleton ) ? name_str : splits[ 1 ];
     for ( size_t i = 0; i < player->action_list.size(); ++i )
     {
       action_t* action = player->action_list[ i ];
       if ( action->name_str == action_name )
       {
-        if ( in_flight_singleton || splits[ 2 ] == "in_flight" || splits[ 2 ] == "in_flight_to_target" )
+        if ( in_flight_singleton || splits[ 2 ] == "in_flight" ||
+          splits[ 2 ] == "in_flight_to_target" || splits[ 2 ] == "in_flight_remains" )
         {
           in_flight_list.push_back( action );
         }
@@ -3281,6 +3497,35 @@ expr_t* action_t::create_expression( const std::string& name_str )
           }
         };
         return new in_flight_to_target_multi_expr_t( in_flight_list, *this );
+      }
+      else if ( splits[ 0 ] == "in_flight_remains" ||
+        ( !in_flight_singleton && splits[ 2 ] == "in_flight_remains" ) )
+      {
+        struct in_flight_remains_multi_expr_t : public expr_t
+        {
+          const std::vector<action_t*> action_list;
+          in_flight_remains_multi_expr_t( const std::vector<action_t*>& al ) :
+            expr_t( "in_flight" ),
+            action_list( al )
+          { }
+
+          virtual double evaluate() override
+          {
+            bool event_found = false;
+            timespan_t t = timespan_t::max();
+            for ( auto a : action_list )
+            {
+              if ( a->has_travel_events() )
+              {
+                event_found = true;
+                t = std::min( t, a->shortest_travel_event() );
+              }
+            }
+
+            return event_found ? t.total_seconds() : 0.0;
+          }
+        };
+        return new in_flight_remains_multi_expr_t( in_flight_list );
       }
     }
   }
@@ -3435,9 +3680,6 @@ void action_t::schedule_travel( action_state_t* s )
 
 void action_t::impact( action_state_t* s )
 {
-  if ( !impact_targeting( s ) )
-    return;
-
   // Note, Critical damage bonus for direct amounts is computed on impact, instead of cast finish.
   s->result_amount = calculate_crit_damage_bonus( s );
 
@@ -3522,6 +3764,21 @@ bool action_t::has_travel_events_for( const player_t* target ) const
   return false;
 }
 
+/**
+ * Determine the remaining duration of the next travel event.
+ */
+timespan_t action_t::shortest_travel_event() const
+{
+  if ( travel_events.empty() )
+    return timespan_t::zero();
+
+  timespan_t t = timespan_t::max();
+  for ( const auto& travel_event : travel_events )
+    t = std::min( t, travel_event->remains() );
+
+  return t;
+}
+
 void action_t::remove_travel_event( travel_event_t* e )
 {
   std::vector<travel_event_t*>::iterator pos = range::find( travel_events, e );
@@ -3577,6 +3834,8 @@ call_action_list_t::call_action_list_t( player_t* player, const std::string& opt
   ignore_false_positive = true;  // Truly terrible things could happen if a false positive comes back on this.
   use_off_gcd = true;
   trigger_gcd = timespan_t::zero();
+  use_while_casting = true;
+  usable_while_casting = true;
 
   if ( alist_name.empty() )
   {
@@ -3596,23 +3855,73 @@ call_action_list_t::call_action_list_t( player_t* player, const std::string& opt
   }
 }
 
-void call_action_list_t::init()
+swap_action_list_t::swap_action_list_t( player_t* player, const std::string& options_str,
+                                        const std::string& name ) :
+    action_t( ACTION_OTHER, name, player ),
+    alist( 0 )
 {
-  action_t::init();
-
-  if ( action_list && alist )
+  std::string alist_name;
+  int randomtoggle = 0;
+  add_option( opt_string( "name", alist_name ) );
+  add_option( opt_int( "random", randomtoggle ) );
+  parse_options( options_str );
+  ignore_false_positive = true;
+  if ( alist_name.empty() )
   {
-    auto action_it  = range::find( action_list->foreground_action_list, this );
-    auto action_idx = std::distance( action_list->foreground_action_list.begin(), action_it );
-    auto it         = range::find_if( alist->parents, [this]( const action_priority_list_t::parent_t& parent ) {
-      return std::get<0>( parent ) == action_list;
-    } );
-
-    if ( it == alist->parents.end() )
-    {
-      alist->parents.push_back( std::make_tuple( action_list, action_idx ) );
-    }
+    sim->errorf( "Player %s uses %s without specifying the name of the action list\n", player->name(), name.c_str() );
+    sim->cancel();
   }
+
+  alist = player->find_action_priority_list( alist_name );
+
+  if ( !alist )
+  {
+    sim->errorf( "Player %s uses %s with unknown action list %s\n", player->name(), name.c_str(),
+                 alist_name.c_str() );
+    sim->cancel();
+  }
+  else if ( randomtoggle == 1 )
+    alist->random = randomtoggle;
+
+  trigger_gcd = timespan_t::zero();
+  use_off_gcd = true;
+  use_while_casting = true;
+  usable_while_casting = true;
+}
+
+void swap_action_list_t::execute()
+{
+  if ( sim->log )
+    sim->out_log.printf( "%s swaps to action list %s", player->name(), alist->name_str.c_str() );
+  player->activate_action_list( alist, player->current_execute_type );
+}
+
+bool swap_action_list_t::ready()
+{
+  if ( player->active_action_list == alist )
+    return false;
+
+  return action_t::ready();
+}
+
+run_action_list_t::run_action_list_t( player_t* player, const std::string& options_str ) :
+  swap_action_list_t( player, options_str, "run_action_list" )
+{
+  quiet                 = true;
+  ignore_false_positive = true;
+}
+
+void run_action_list_t::execute()
+{
+  if ( sim->log )
+    sim->out_log.print( "{} runs action list {}{}",
+        player->name(),
+        alist->name_str.c_str(),
+        player->readying ? " (off-gcd)" : "");
+
+  if ( player->restore_action_list == 0 )
+    player->restore_action_list = player->active_action_list;
+  player->activate_action_list( alist, player->current_execute_type );
 }
 
 /**
@@ -3748,12 +4057,6 @@ void action_t::reschedule_queue_event()
   }
 
   timespan_t new_queue_delay = cooldown->queue_delay();
-
-  if ( new_queue_delay <= timespan_t::zero() )
-  {
-    return;
-  }
-
   timespan_t remaining = queue_event->remains();
 
   // The actual queue delay did not change, so no need to do anything
@@ -3771,10 +4074,10 @@ void action_t::reschedule_queue_event()
   }
   else
   {
-    bool off_gcd = debug_cast<queued_action_execute_event_t*>( queue_event )->off_gcd;
+    execute_type type = debug_cast<queued_action_execute_event_t*>( queue_event )->type;
 
     event_t::cancel( queue_event );
-    queue_event = make_event<queued_action_execute_event_t>( *sim, this, new_queue_delay, off_gcd );
+    queue_event = make_event<queued_action_execute_event_t>( *sim, this, new_queue_delay, type );
   }
 }
 
@@ -3794,6 +4097,14 @@ void action_t::acquire_target( retarget_event_e /* event */, player_t* /* contex
 
   // If the user has indicated a target number for the action, don't adjust targets
   if ( option.target_number > 0 )
+  {
+    return;
+  }
+
+  // Ongoing channels won't be retargeted during channel. Note that this works in all current cases,
+  // since if the retargeting event is due to the target demise, the channel has already been
+  // interrupted before (due to the demise).
+  if ( player->channeling && player->channeling == this )
   {
     return;
   }
@@ -3824,4 +4135,39 @@ void action_t::set_target( player_t* new_target )
   }
 
   target = new_target;
+}
+
+bool action_t::usable_during_current_cast() const
+{
+  if ( background || !usable_while_casting || !use_while_casting )
+  {
+    return false;
+  }
+
+  timespan_t threshold = timespan_t::max();
+  if ( player->readying )
+  {
+    threshold = player->readying->occurs();
+  }
+  else if ( player->channeling )
+  {
+    threshold = player->channeling->get_dot()->end_event->occurs();
+    threshold += sim->channel_lag + 4 * sim->channel_lag_stddev;
+  }
+  else if ( player->executing )
+  {
+    threshold = player->executing->execute_event->occurs();
+  }
+
+  return cooldown->queueable() < threshold;
+}
+
+bool action_t::usable_during_current_gcd() const
+{
+  if ( background || !use_off_gcd )
+  {
+    return false;
+  }
+
+  return player->readying && cooldown->queueable() < player->readying->occurs();
 }

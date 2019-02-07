@@ -18,6 +18,24 @@ namespace {
     { return obj -> item_class == ITEM_CLASS_CONSUMABLE && obj -> item_subclass == CLASS; }
   };
 
+  struct gem_filter_t
+  {
+    // No "other" gems, nor relicn
+    bool operator()( const item_data_t* obj ) const
+    { return obj->item_class == ITEM_CLASS_GEM && obj->item_subclass != 9 && obj->item_subclass != 11; }
+  };
+
+  // Potions need their own filter unfortunately, because some potions are of sub class 8 (other)
+  struct potion_filter_t
+  {
+    bool operator()( const item_data_t* obj ) const
+    {
+      return obj->item_class == ITEM_CLASS_CONSUMABLE &&
+             ( obj->item_subclass == ITEM_SUBCLASS_POTION ||
+               obj->item_subclass == ITEM_SUBCLASS_CONSUMABLE_OTHER );
+    }
+  };
+
   item_data_t nil_item_data;
   random_suffix_data_t nil_rsd;
   item_enchantment_data_t nil_ied;
@@ -25,13 +43,15 @@ namespace {
   dbc_index_t<item_enchantment_data_t, id_member_policy> item_enchantment_data_index;
   dbc_index_t<item_data_t, id_member_policy> item_data_index;
 
-  typedef filtered_dbc_index_t<item_data_t, consumable_filter_t<item_data_t, ITEM_SUBCLASS_POTION>, id_member_policy> potion_data_t;
+  typedef filtered_dbc_index_t<item_data_t, potion_filter_t, id_member_policy> potion_data_t;
   typedef filtered_dbc_index_t<item_data_t, consumable_filter_t<item_data_t, ITEM_SUBCLASS_FLASK>, id_member_policy> flask_data_t;
   typedef filtered_dbc_index_t<item_data_t, consumable_filter_t<item_data_t, ITEM_SUBCLASS_FOOD>, id_member_policy> food_data_t;
 
   potion_data_t potion_data_index;
   flask_data_t flask_data_index;
   food_data_t food_data_index;
+
+  filtered_dbc_index_t<item_data_t, gem_filter_t, id_member_policy> gem_index;
 }
 
 const item_name_description_t* dbc::item_name_descriptions( bool ptr )
@@ -129,88 +149,112 @@ unsigned dbc_t::random_property_max_level() const
 
 const random_prop_data_t& dbc_t::random_property( unsigned ilevel ) const
 {
+  static random_prop_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_rand_prop_points_data[ ilevel - 1 ] : __rand_prop_points_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __rand_prop_points_data[ ilevel - 1 ];
 #endif
 }
 
 const item_scale_data_t& dbc_t::item_damage_1h( unsigned ilevel ) const
 {
+  static item_scale_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_itemdamageonehand_data[ ilevel - 1 ] : __itemdamageonehand_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __itemdamageonehand_data[ ilevel - 1 ];
 #endif
 }
 
 const item_scale_data_t& dbc_t::item_damage_2h( unsigned ilevel ) const
 {
+  static item_scale_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_itemdamagetwohand_data[ ilevel - 1 ] : __itemdamagetwohand_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __itemdamagetwohand_data[ ilevel - 1 ];
 #endif
 }
 
 const item_scale_data_t& dbc_t::item_damage_caster_1h( unsigned ilevel ) const
 {
+  static item_scale_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_itemdamageonehandcaster_data[ ilevel - 1 ] : __itemdamageonehandcaster_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __itemdamageonehandcaster_data[ ilevel - 1 ];
 #endif
 }
 
 const item_scale_data_t& dbc_t::item_damage_caster_2h( unsigned ilevel ) const
 {
+  static item_scale_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_itemdamagetwohandcaster_data[ ilevel - 1 ] : __itemdamagetwohandcaster_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __itemdamagetwohandcaster_data[ ilevel - 1 ];
 #endif
 }
 
 const item_scale_data_t& dbc_t::item_armor_quality( unsigned ilevel ) const
 {
+  static item_scale_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_itemarmorquality_data[ ilevel - 1 ] : __itemarmorquality_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __itemarmorquality_data[ ilevel - 1 ];
 #endif
 }
 
 const item_scale_data_t& dbc_t::item_armor_shield( unsigned ilevel ) const
 {
+  static item_scale_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_itemarmorshield_data[ ilevel - 1 ] : __itemarmorshield_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __itemarmorshield_data[ ilevel - 1 ];
 #endif
 }
 
 const item_armor_type_data_t& dbc_t::item_armor_total( unsigned ilevel ) const
 {
+  static item_armor_type_data_t __default {};
+  if ( ilevel < 1 || ilevel > MAX_ILEVEL )
+  {
+    return __default;
+  }
 #if SC_USE_PTR
-  assert( ilevel > 0 && ( ( ptr && ilevel <= PTR_RAND_PROP_POINTS_SIZE ) || ( ilevel <= RAND_PROP_POINTS_SIZE ) ) );
   return ptr ? __ptr_itemarmortotal_data[ ilevel - 1 ] : __itemarmortotal_data[ ilevel - 1 ];
 #else
-  assert( ilevel > 0 && ( ilevel <= RAND_PROP_POINTS_SIZE ) );
   return __itemarmortotal_data[ ilevel - 1 ];
 #endif
 }
@@ -444,12 +488,14 @@ void dbc::init_item_data()
   potion_data_index.init( __items_noptr(), false );
   flask_data_index.init( __items_noptr(), false );
   food_data_index.init( __items_noptr(), false );
+  gem_index.init( __items_noptr(), false );
 #if SC_USE_PTR
   item_data_index.init( __items_ptr(), true );
   item_enchantment_data_index.init( __ptr_spell_item_ench_data, true );
   potion_data_index.init( __items_ptr(), true );
   flask_data_index.init( __items_ptr(), true );
   food_data_index.init( __items_ptr(), true );
+  gem_index.init( __items_ptr(), true );
 #endif
 }
 
@@ -1252,6 +1298,31 @@ bool item_database::load_item_from_data( item_t& item )
 
   util::tokenize( item.name_str );
 
+  // Apply azerite level to item level conversion first, but only for Blizzard API sourced profiles
+  if ( item.player->profile_source_ == profile_source::BLIZZARD_API )
+  {
+    if ( item.parsed.azerite_level > 0 )
+    {
+      item.parsed.data.level = item.player->dbc.azerite_item_level( item.parsed.azerite_level );
+    }
+  }
+
+  // Apply any azerite powers that apply bonus ids
+  for ( auto power_id : item.parsed.azerite_ids )
+  {
+    const auto& power = item.player->dbc.azerite_power( power_id );
+    if ( power.id == 0 || power.bonus_id == 0 )
+    {
+      continue;
+    }
+
+    auto it = range::find( item.parsed.bonus_id, power.bonus_id );
+    if ( it == item.parsed.bonus_id.end() )
+    {
+      item.parsed.bonus_id.push_back( power.bonus_id );
+    }
+  }
+
   // Item bonus for local source only. TODO: BCP API and Wowhead will need ..
   // something similar
   for ( size_t i = 0, end = item.parsed.bonus_id.size(); i < end; i++ )
@@ -1370,6 +1441,24 @@ std::vector<item_database::token_t> item_database::parse_tokens( const std::stri
   }
 
   return tokens;
+}
+
+const item_data_t* dbc::find_gem( const std::string& gem, bool ptr, bool tokenized )
+{
+  const item_data_t* i = gem_index.get( ptr, [&gem, tokenized]( const item_data_t* obj ) {
+      if ( tokenized )
+      {
+        std::string n = obj->name;
+        util::tokenize( n );
+        return n == gem;
+      }
+      else
+      {
+        return gem == obj->name;
+      }
+  } );
+
+  return i ? i : &( nil_item_data );
 }
 
 const item_data_t* dbc::find_consumable( item_subclass_consumable type, bool ptr, const std::function<bool(const item_data_t*)>& f )
@@ -1576,7 +1665,7 @@ std::string dbc::bonus_ids_str( dbc_t& dbc)
     e++;
   }
 
-  std::sort( bonus_ids.begin(), bonus_ids.end() );
+  range::sort( bonus_ids );
 
   for ( size_t i = 0; i < bonus_ids.size(); ++i )
   {

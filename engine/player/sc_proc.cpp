@@ -17,21 +17,21 @@ struct proc_parse_opt_t
 
 const proc_parse_opt_t __proc_opts[] =
 {
-  { "aoespell",    PF_AOE_SPELL                                                },
-  { "spell",       PF_SPELL | PF_PERIODIC                                      },
-  { "directspell", PF_SPELL                                                    },
-  { "periodic",    PF_PERIODIC                                                 },
-  { "aoeheal",     PF_AOE_HEAL                                                 },
-  { "heal",        PF_HEAL | PF_PERIODIC                                       },
-  { "directheal",  PF_HEAL                                                     },
-  { "attack",      PF_MELEE | PF_MELEE_ABILITY | PF_RANGED | PF_RANGED_ABILITY },
-  { "wattack",     PF_MELEE | PF_RANGED                                        },
-  { "sattack",     PF_MELEE_ABILITY | PF_RANGED_ABILITY                        },
-  { "melee",       PF_MELEE | PF_MELEE_ABILITY                                 },
-  { "wmelee",      PF_MELEE                                                    },
-  { "smelee",      PF_MELEE_ABILITY                                            },
-  { "wranged",     PF_RANGED                                                   },
-  { "sranged",     PF_RANGED_ABILITY                                           },
+  { "genericspell", PF_NONE_SPELL                                               },
+  { "spell",        PF_MAGIC_SPELL | PF_PERIODIC                                },
+  { "directspell",  PF_MAGIC_SPELL                                              },
+  { "periodic",     PF_PERIODIC                                                 },
+  { "genericheal",  PF_NONE_HEAL                                                },
+  { "heal",         PF_MAGIC_HEAL | PF_PERIODIC                                 },
+  { "directheal",   PF_MAGIC_HEAL                                               },
+  { "attack",       PF_MELEE | PF_MELEE_ABILITY | PF_RANGED | PF_RANGED_ABILITY },
+  { "wattack",      PF_MELEE | PF_RANGED                                        },
+  { "sattack",      PF_MELEE_ABILITY | PF_RANGED_ABILITY                        },
+  { "melee",        PF_MELEE | PF_MELEE_ABILITY                                 },
+  { "wmelee",       PF_MELEE                                                    },
+  { "smelee",       PF_MELEE_ABILITY                                            },
+  { "wranged",      PF_RANGED                                                   },
+  { "sranged",      PF_RANGED_ABILITY                                           },
 };
 
 const proc_parse_opt_t __proc2_opts[] =
@@ -151,6 +151,7 @@ void special_effect_t::reset()
   discharge_amount = 0;
   discharge_scaling = 0;
   aoe = 0;
+  reverse_stack_reduction = 0;
 
   // Must match buff creator defaults for now
   max_stacks = -1;
@@ -160,6 +161,7 @@ void special_effect_t::reset()
   ppm_ = std::numeric_limits<double>::min();
   rppm_scale_ = RPPM_NONE;
   rppm_modifier_ = -1.0;
+  rppm_blp_ = real_ppm_t::BLP_ENABLED;
 
   // Must match buff creator defaults for now
   duration_ = timespan_t::min();
@@ -207,8 +209,11 @@ const spell_data_t* special_effect_t::trigger() const
   if ( ! player )
     return spell_data_t::nil();
 
+  // Note, bypasses level checks and such
   if ( trigger_spell_id > 0 )
-    return player -> find_spell( trigger_spell_id );
+  {
+    return dbc::find_spell( player, trigger_spell_id );
+  }
 
   for ( size_t i = 1, end = driver() -> effect_count(); i <= end; i++ )
   {
@@ -323,6 +328,11 @@ stat_buff_t* special_effect_t::initialize_stat_buff() const
   if ( stat != STAT_NONE )
     buff->add_stat( stat, stat_amount );
 
+  if ( reverse_stack_reduction > 0 )
+  {
+    buff->set_reverse_stack_count( reverse_stack_reduction );
+  }
+
   return buff;
 }
 
@@ -386,6 +396,11 @@ absorb_buff_t* special_effect_t::initialize_absorb_buff() const
   buff->set_chance( 1 );
 
   buff->set_refresh_behavior( buff_refresh_behavior::DURATION );
+
+  if ( reverse_stack_reduction > 0 )
+  {
+    buff->set_reverse_stack_count( reverse_stack_reduction );
+  }
 
   return buff;
 }
@@ -861,7 +876,7 @@ std::string special_effect_t::name() const
     return name_str;
 
   // Guess proc name based on spells.
-  std::string n;
+  std::string n, base_name;
   // Use driver name, if it's not hidden or passive, or there's no trigger spell to use
   if ( ( ! driver() -> flags( spell_attribute::SX_HIDDEN ) && ! driver() -> flags( spell_attribute::SX_PASSIVE ) ) || 
        ! trigger() -> ok() )
@@ -871,6 +886,8 @@ std::string special_effect_t::name() const
     n = trigger() -> name_cstr();
 
   util::tokenize( n );
+
+  base_name = n;
 
   // As a last resort, try to make the special effect name out of spell_id
   if ( n.empty() && spell_id > 0 )
@@ -885,6 +902,28 @@ std::string special_effect_t::name() const
   // TODO: We need a "shared" mechanism here
   if ( item && item -> slot == SLOT_OFF_HAND )
     n += "_oh";
+
+  if ( action_type() != SPECIAL_EFFECT_ACTION_CUSTOM &&
+       action_type() != SPECIAL_EFFECT_ACTION_NONE &&
+       action_type() != SPECIAL_EFFECT_ACTION_DISABLED )
+  {
+    action_t* a = player -> find_action( base_name );
+    // If for some reason the trigger spell would be named identical to another spell that the actor
+    // already has, rename this new one with the slot of the item, if there is an item
+    if ( a && a->id != trigger()->id() )
+    {
+      n += " (";
+      if ( item )
+      {
+        n += item->slot_name();
+      }
+      else
+      {
+        n += util::special_effect_source_string( source );
+      }
+      n += ")";
+    }
+  }
 
   return n;
 }
@@ -911,7 +950,13 @@ inline std::ostream& operator<<(std::ostream &os, const special_effect_t& se)
     if ( se.tick_time() != timespan_t::zero() )
       os << " tick=" << se.tick_time().total_seconds();
     if ( se.reverse )
+    {
       os << " Reverse";
+      if ( se.reverse_stack_reduction > 0 )
+      {
+        os << "(" << se.reverse_stack_reduction << ")";
+      }
+    }
   }
 
   if ( se.school != SCHOOL_NONE )
@@ -1038,6 +1083,10 @@ void special_effect::parse_special_effect_encoding( special_effect_t& effect,
       else
         effect.rppm_scale_ = RPPM_NONE;
     }
+    else if ( util::str_compare_ci( t.name, "noblp" ) )
+    {
+      effect.rppm_blp_ = real_ppm_t::BLP_DISABLED;
+    }
     else if ( t.name == "duration" || t.name == "dur" )
     {
       effect.duration_ = timespan_t::from_seconds( t.value );
@@ -1049,6 +1098,10 @@ void special_effect::parse_special_effect_encoding( special_effect_t& effect,
     else if ( t.name == "tick" )
     {
       effect.tick = timespan_t::from_seconds( t.value );
+    }
+    else if ( t.full == "stackreduction" )
+    {
+      effect.reverse_stack_reduction = as<int>( t.value );
     }
     else if ( t.full == "reverse" )
     {
@@ -1198,7 +1251,10 @@ void dbc_proc_callback_t::initialize()
   // Initialize proc chance triggers. Note that this code only chooses one, and
   // prioritizes RPPM > PPM > proc chance.
   if ( effect.rppm() > 0 && effect.rppm_scale() != RPPM_DISABLE )
+  {
     rppm = listener -> get_rppm( effect.name(), effect.rppm(), effect.rppm_modifier(), effect.rppm_scale() );
+    rppm->set_blp_state( static_cast<real_ppm_t::blp>( effect.rppm_blp_ ) );
+  }
   else if ( effect.ppm() > 0 )
     ppm = effect.ppm();
   else if ( effect.proc_chance() != 0 )

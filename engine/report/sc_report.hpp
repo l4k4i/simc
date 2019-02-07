@@ -232,8 +232,7 @@ void print_spell_query( std::ostream& out, const sim_t& sim,
                         const spell_data_expr_t&, unsigned level );
 void print_spell_query( xml_node_t* out, FILE* file, const sim_t& sim,
                         const spell_data_expr_t&, unsigned level );
-bool check_gear_ilevel( player_t& p, sim_t& sim );
-bool check_artifact_points( const player_t& p, sim_t& sim );
+bool check_gear( player_t& p, sim_t& sim );
 void print_profiles( sim_t* );
 void print_text( sim_t*, bool detail );
 void print_html( sim_t& );
@@ -404,8 +403,8 @@ public:
   {
     std::stringstream s;
 
-    s << "<a href=\"http://" << decoration_domain( *this -> m_obj -> sim )
-      << ".wowdb.com/spells/" << this -> m_obj -> data().id();
+    s << "<a href=\"https://" << decoration_domain( *this -> m_obj -> sim )
+      << ".wowhead.com/spell=" << this -> m_obj -> data().id();
 
     return s.str();
   }
@@ -428,7 +427,7 @@ public:
 
     if ( m_obj -> item )
     {
-      parameters.push_back( "itemLevel=" + util::to_string( m_obj -> item -> item_level() ) );
+      parameters.push_back( "ilvl=" + util::to_string( m_obj -> item -> item_level() ) );
     }
 
     return parameters;

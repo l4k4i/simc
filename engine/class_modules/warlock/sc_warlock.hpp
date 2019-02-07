@@ -26,7 +26,6 @@ namespace warlock
 
       propagate_const<buff_t*> debuffs_haunt;
       propagate_const<buff_t*> debuffs_shadow_embrace;
-      propagate_const<buff_t*> debuffs_tormented_agony;
 
       //Destro
       propagate_const<dot_t*> dots_immolate;
@@ -62,9 +61,12 @@ namespace warlock
     struct warlock_t : public player_t
     {
     public:
-      player_t * havoc_target;
+      player_t* havoc_target;
+      std::vector<action_t*> havoc_spells;  // Used for smarter target cache invalidation.
       bool wracking_brilliance;
       double agony_accumulator;
+
+      unsigned active_pets;
 
       // Active Pet
       struct pets_t
@@ -103,9 +105,8 @@ namespace warlock
       struct active_t
       {
         action_t* grimoire_of_sacrifice_proc;
-        action_t* cry_havoc;
-        action_t* tormented_agony;
         action_t* chaotic_flames;
+        spell_t* pandemic_invocation;
         spell_t* corruption;
         spell_t* roaring_blaze;
         spell_t* internal_combustion;
@@ -201,11 +202,11 @@ namespace warlock
         //Demo
         azerite_power_t demonic_meteor;
         azerite_power_t forbidden_knowledge;
-        //azerite_power_t meteoric_flare; //no current data
         azerite_power_t shadows_bite;
         azerite_power_t supreme_commander;
         azerite_power_t umbral_blaze;
         azerite_power_t explosive_potential;
+        azerite_power_t baleful_invocation;
 
         //Aff
         azerite_power_t cascading_calamity;
@@ -214,6 +215,7 @@ namespace warlock
         azerite_power_t sudden_onset;
         azerite_power_t wracking_brilliance;
         azerite_power_t deathbloom;
+        azerite_power_t pandemic_invocation;
 
         //Destro
         azerite_power_t accelerant;
@@ -222,30 +224,8 @@ namespace warlock
         azerite_power_t crashing_chaos;
         azerite_power_t rolling_havoc;
         azerite_power_t flashpoint;
+        azerite_power_t chaos_shards;
       } azerite;
-
-      struct legendary_t
-      {
-        const special_effect_t* the_master_harvester;
-        const special_effect_t* sindorei_spite;
-        const special_effect_t* stretens_sleepless_shackles;
-        const special_effect_t* hood_of_eternal_disdain;
-        const special_effect_t* power_cord_of_lethtendris;
-        const special_effect_t* lessons_of_spacetime;
-        const special_effect_t* wakeners_loyalty;
-        const special_effect_t* soul_of_the_netherlord;
-        const special_effect_t* reap_and_sow;
-        const special_effect_t* sacrolashs_dark_strike;
-        const spell_data_t* sephuzs_secret;
-        const special_effect_t* kazzaks_final_curse;
-        const special_effect_t* recurrent_ritual;
-        const special_effect_t* magistrike_restraints;
-        const special_effect_t* feretory_of_souls;
-        const special_effect_t* alythesss_pyrogenics;
-        const special_effect_t* odr_shawl_of_the_ymirjar;
-        const special_effect_t* wilfreds_sigil_of_superior_summoning;
-
-      } legendary;
 
       // Mastery Spells
       struct mastery_spells_t
@@ -256,7 +236,6 @@ namespace warlock
       } mastery_spells;
 
       //Procs and RNG
-      propagate_const<real_ppm_t*> affliction_t20_2pc_rppm;
       propagate_const<real_ppm_t*> grimoire_of_sacrifice_rppm; // grimoire of sacrifice
 
       // Cooldowns
@@ -265,8 +244,9 @@ namespace warlock
         propagate_const<cooldown_t*> haunt;
         propagate_const<cooldown_t*> shadowburn;
         propagate_const<cooldown_t*> soul_fire;
-        propagate_const<cooldown_t*> sindorei_spite_icd;
         propagate_const<cooldown_t*> call_dreadstalkers;
+        propagate_const<cooldown_t*> deathbolt;
+        propagate_const<cooldown_t*> phantom_singularity;
         propagate_const<cooldown_t*> darkglare;
         propagate_const<cooldown_t*> demonic_tyrant;
       } cooldowns;
@@ -316,9 +296,9 @@ namespace warlock
 
         //affliction buffs
         propagate_const<buff_t*> active_uas;
+        propagate_const<buff_t*> drain_life;
         propagate_const<buff_t*> nightfall;
         propagate_const<buff_t*> dark_soul_misery;
-        propagate_const<buff_t*> demonic_speed; // t20 4pc
 
         propagate_const<buff_t*> cascading_calamity;
         propagate_const<buff_t*> inevitable_demise;
@@ -329,8 +309,6 @@ namespace warlock
         propagate_const<buff_t*> demonic_calling;
         propagate_const<buff_t*> inner_demons;
         propagate_const<buff_t*> nether_portal;
-        propagate_const<buff_t*> dreaded_haste; // t20 4pc
-        propagate_const<buff_t*> rage_of_guldan; // t21 2pc
         propagate_const<buff_t*> wild_imps;
         propagate_const<buff_t*> dreadstalkers;
         propagate_const<buff_t*> vilefiend;
@@ -347,8 +325,6 @@ namespace warlock
 
         //destruction_buffs
         propagate_const<buff_t*> backdraft;
-        propagate_const<buff_t*> embrace_chaos;
-        propagate_const<buff_t*> active_havoc;
         propagate_const<buff_t*> reverse_entropy;
         propagate_const<buff_t*> grimoire_of_supremacy;
         propagate_const<buff_t*> dark_soul_instability;
@@ -359,13 +335,7 @@ namespace warlock
         propagate_const<buff_t*> crashing_chaos;
         propagate_const<buff_t*> rolling_havoc;
         propagate_const<buff_t*> flashpoint;
-
-        // legendary buffs
-        propagate_const<buff_t*> soul_harvest;
-        propagate_const<buff_t*> sindorei_spite;
-        propagate_const<buff_t*> stretens_insanity;
-        propagate_const<buff_t*> sephuzs_secret;
-        propagate_const<buff_t*> alythesss_pyrogenics;
+        propagate_const<buff_t*> chaos_shards;
       } buffs;
 
       // Gains
@@ -377,49 +347,40 @@ namespace warlock
         gain_t* drain_soul;
         gain_t* seed_of_corruption;
         gain_t* unstable_affliction_refund;
+        gain_t* pandemic_invocation;
 
         gain_t* conflagrate;
         gain_t* shadowburn;
         gain_t* incinerate;
         gain_t* incinerate_crits;
-        gain_t* fnb_bits;
+        gain_t* incinerate_fnb;
+        gain_t* incinerate_fnb_crits;
         gain_t* immolate;
         gain_t* immolate_crits;
         gain_t* soul_fire;
         gain_t* infernal;
         gain_t* shadowburn_shard;
         gain_t* inferno;
-        gain_t* reverse_entropy;
+        gain_t* chaos_shards;
 
         gain_t* miss_refund;
 
-        gain_t* power_trip;
         gain_t* shadow_bolt;
         gain_t* doom;
         gain_t* demonic_meteor;
+        gain_t* baleful_invocation;
 
         gain_t* soulsnatcher;
-        gain_t* t19_2pc_demonology;
-
-        gain_t* recurrent_ritual;
-        gain_t* feretory_of_souls;
-        gain_t* power_cord_of_lethtendris;
-
-        gain_t* affliction_t20_2pc;
-        gain_t* destruction_t20_2pc;
       } gains;
 
       // Procs
       struct procs_t
       {
         proc_t* soul_conduit;
-        //proc_t* the_master_harvester;
         //aff
         proc_t* nightfall;
-        proc_t* affliction_t21_2pc;
         //demo
         proc_t* demonic_calling;
-        proc_t* power_trip;
         proc_t* souls_consumed;
         proc_t* one_shard_hog;
         proc_t* two_shard_hog;
@@ -429,11 +390,7 @@ namespace warlock
         proc_t* dreadstalker_debug;
         proc_t* summon_random_demon;
         proc_t* portal_summon;
-        proc_t* demonology_t20_2pc;
-        proc_t* wilfreds_dog;
-        proc_t* wilfreds_imp;
         //destro
-        proc_t* t19_2pc_chaos_bolts;
         proc_t* reverse_entropy;
       } procs;
 
@@ -472,7 +429,6 @@ namespace warlock
       resource_e primary_resource() const override { return RESOURCE_MANA; }
       role_e    primary_role() const override { return ROLE_SPELL; }
       stat_e    convert_hybrid_stat( stat_e s ) const override;
-      stat_e    primary_stat() const override { return STAT_INTELLECT; }
       double    matching_gear_multiplier( attribute_e attr ) const override;
       double    composite_player_multiplier( school_e school ) const override;
       double    composite_player_target_multiplier( player_t* target, school_e school ) const override;
@@ -489,6 +445,7 @@ namespace warlock
       double    composite_armor() const override;
       void      halt() override;
       void      combat_begin() override;
+      void      init_assessors() override;
       expr_t*   create_expression( const std::string& name_str ) override;
       std::string       default_potion() const override;
       std::string       default_flask() const override;
@@ -508,11 +465,6 @@ namespace warlock
         return td;
       }
 
-      warlock_td_t* find_target_data( player_t* target ) const
-      {
-        return target_data[target];
-      }
-
       // sc_warlock_affliction
       action_t* create_action_affliction( const std::string& action_name, const std::string& options_str );
       void create_buffs_affliction();
@@ -522,6 +474,7 @@ namespace warlock
       void init_procs_affliction();
       void create_options_affliction();
       void create_apl_affliction();
+      expr_t*   create_aff_expression(const std::string& name_str);
 
       // sc_warlock_demonology
       action_t* create_action_demonology( const std::string& action_name, const std::string& options_str );
@@ -619,16 +572,6 @@ namespace warlock
           return p()->get_target_data( t );
         }
 
-        warlock_td_t* find_td( player_t* t )
-        {
-          return p()->find_target_data( t );
-        }
-
-        const warlock_td_t* find_td( player_t* t ) const
-        {
-          return p()->find_target_data( t );
-        }
-
         void reset() override
         {
           spell_t::reset();
@@ -638,31 +581,31 @@ namespace warlock
         {
           action_t::init();
 
-          if ( p()->legendary.reap_and_sow )
+          if ( p()->specialization() == WARLOCK_AFFLICTION )
           {
-            if ( data().affected_by( p()->find_spell( 281494 )->effectN( 1 ) ) )
-              base_dd_multiplier *= 1.0 + p()->find_spell( 281494 )->effectN( 1 ).percent();
+            if ( data().affected_by( p()->spec.affliction->effectN( 1 ) ) )
+              base_dd_multiplier *= 1.0 + p()->spec.affliction->effectN( 1 ).percent();
 
-            if ( data().affected_by( p()->find_spell( 281494 )->effectN( 2 ) ) )
-              base_td_multiplier *= 1.0 + p()->find_spell( 281494 )->effectN( 2 ).percent();
+            if ( data().affected_by( p()->spec.affliction->effectN( 2 ) ) )
+              base_td_multiplier *= 1.0 + p()->spec.affliction->effectN( 2 ).percent();
           }
 
-          if ( p()->legendary.wakeners_loyalty )
+          if ( p()->specialization() == WARLOCK_DEMONOLOGY )
           {
-            if ( data().affected_by( p()->find_spell( 281495 )->effectN( 1 ) ) )
-              base_dd_multiplier *= 1.0 + p()->find_spell( 281495 )->effectN( 1 ).percent();
+            if ( data().affected_by( p()->spec.demonology->effectN( 1 ) ) )
+              base_dd_multiplier *= 1.0 + p()->spec.demonology->effectN( 1 ).percent();
 
-            if ( data().affected_by( p()->find_spell( 281495 )->effectN( 2 ) ) )
-              base_td_multiplier *= 1.0 + p()->find_spell( 281495 )->effectN( 2 ).percent();
+            if ( data().affected_by( p()->spec.demonology->effectN( 2 ) ) )
+              base_td_multiplier *= 1.0 + p()->spec.demonology->effectN( 2 ).percent();
           }
 
-          if ( p()->legendary.lessons_of_spacetime )
+          if ( p()->specialization() == WARLOCK_DESTRUCTION )
           {
-            if ( data().affected_by( p()->find_spell( 281496 )->effectN( 1 ) ) )
-              base_dd_multiplier *= 1.0 + p()->find_spell( 281496 )->effectN( 1 ).percent();
+            if ( data().affected_by( p()->spec.destruction->effectN( 1 ) ) )
+              base_dd_multiplier *= 1.0 + p()->spec.destruction->effectN( 1 ).percent();
 
-            if ( data().affected_by( p()->find_spell( 281496 )->effectN( 2 ) ) )
-              base_td_multiplier *= 1.0 + p()->find_spell( 281496 )->effectN( 2 ).percent();
+            if ( data().affected_by( p()->spec.destruction->effectN( 2 ) ) )
+              base_td_multiplier *= 1.0 + p()->spec.destruction->effectN( 2 ).percent();
           }
         }
 
@@ -681,7 +624,7 @@ namespace warlock
             bool procced = p()->grimoire_of_sacrifice_rppm->trigger();
             if ( procced )
             {
-              p()->active.grimoire_of_sacrifice_proc->target = execute_state->target;
+              p()->active.grimoire_of_sacrifice_proc->set_target( execute_state->target );
               p()->active.grimoire_of_sacrifice_proc->execute();
             }
           }
@@ -690,6 +633,43 @@ namespace warlock
         void consume_resource() override
         {
           spell_t::consume_resource();
+
+          if (resource_current == RESOURCE_SOUL_SHARD && p()->in_combat)
+          {
+            // lets try making all lock specs not react instantly to shard gen
+            if (p()->talents.soul_conduit->ok())
+            {
+              struct sc_event :
+                public player_event_t
+              {
+                gain_t* shard_gain;
+                warlock_t* pl;
+                int shards_used;
+
+                sc_event(warlock_t* p, int c) :
+                  player_event_t(*p, timespan_t::from_millis(100)), shard_gain(p -> gains.soul_conduit), pl(p), shards_used(c) { }
+
+                virtual const char* name() const override
+                {
+                  return "sc_event";
+                }
+
+                virtual void execute() override
+                {
+                  double soul_conduit_rng = pl->talents.soul_conduit->effectN(1).percent();
+
+                  for (int i = 0; i < shards_used; i++) {
+                    if (rng().roll(soul_conduit_rng)) {
+                      pl->resource_gain(RESOURCE_SOUL_SHARD, 1.0, pl->gains.soul_conduit);
+                      pl->procs.soul_conduit->occur();
+                    }
+                  }
+                }
+              };
+
+              make_event<sc_event>(*p()->sim, p(), as<int>(last_resource_cost));
+            }
+          }
         }
 
         void impact( action_state_t* s ) override
@@ -716,6 +696,43 @@ namespace warlock
           {
             dot->extend_duration( extend_duration, dot->current_action->dot_duration * 1.5 );
           }
+        }
+
+        expr_t* create_expression(const std::string& name_str) override
+        {
+          if (name_str == "target_uas")
+          {
+            return make_fn_expr("target_uas", [this]() {
+              double uas = 0.0;
+
+              for (int i = 0; i < MAX_UAS; i++)
+              {
+                uas += td(target)->dots_unstable_affliction[i]->is_ticking();
+              }
+
+              return uas;
+            });
+          }
+          else if (name_str == "contagion")
+          {
+            return make_fn_expr(name_str, [this]()
+            {
+              timespan_t con = timespan_t::from_millis(0.0);
+
+              for (int i = 0; i < MAX_UAS; i++)
+              {
+                timespan_t rem = td(target)->dots_unstable_affliction[i]->remains();
+
+                if (rem > con)
+                {
+                  con = rem;
+                }
+              }
+              return con;
+            });
+          }
+
+          return spell_t::create_expression(name_str);
         }
       };
 

@@ -29,6 +29,8 @@ addons:
       - valgrind
       - g++-5
       - bats
+      - libcurl3
+      - libcurl4-gnutls-dev
 
 #env:
   # Each line is a separate build in the build matrix. A build in the build
@@ -63,12 +65,12 @@ install:
 script:
   # Test SimulationCraft.
   - cd tests
-  #- ./run.sh classes.bats
-  #- ./run.sh enemies.bats
+  - ./run.sh classes.bats
+  - ./run.sh enemies.bats
   - cd ..
 
   # Valgrind a raid profile with Linux
-  #- if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 output=/dev/null cleanup_threads=1; fi
-  #- if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 fight_style=HelterSkelter output=/dev/null cleanup_threads=1; fi
-  #- if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 fight_style=HecticAddCleave output=/dev/null cleanup_threads=1; fi
-  #- if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 fight_style=BeastLord output=/dev/null cleanup_threads=1; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 output=/dev/null cleanup_threads=1; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 fight_style=HelterSkelter output=/dev/null cleanup_threads=1; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 fight_style=HecticAddCleave output=/dev/null cleanup_threads=1; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then valgrind --show-reachable=yes --leak-check=summary ./engine/simc PR_Raid.simc iterations=5 threads=1 fight_style=BeastLord output=/dev/null cleanup_threads=1; fi

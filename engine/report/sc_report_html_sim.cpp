@@ -18,12 +18,9 @@ namespace raw_ability_summary
 template <class ResultRange>
 double aggregate_damage( const ResultRange& results )
 {
-  double total = 0;
-  for ( const auto& result : results )
-  {
-    total += result.fight_actual_amount.mean();
-  }
-  return total;
+  return std::accumulate(begin(results), end(results), 0.0, [](auto l, auto r) {
+    return l + r.fight_actual_amount.mean();
+  });
 }
 
 /* Find the first action id associated with a given stats object
@@ -220,12 +217,12 @@ void print( report::sc_html_stream& os, const sim_t& sim )
  * single text strings,
  * because VS limits the size of static objects.
  */
-template <typename T, std::size_t N>
-void print_text_array( report::sc_html_stream& os, const T ( &data )[ N ] )
+template <typename Range>
+void print_text_array( report::sc_html_stream& os, const Range& range )
 {
-  for ( size_t i = 0; i < sizeof_array( data ); ++i )
+  for ( auto&& v : range )
   {
-    os << data[ i ];
+    os << v;
   }
 }
 
@@ -1060,7 +1057,7 @@ void print_html_masthead( report::sc_html_stream& os, const sim_t& sim )
   os.printf(
       "<span id=\"logo\"></span>\n"
       "<h1><a href=\"%s\">SimulationCraft %s</a></h1>\n",
-      "http://www.simulationcraft.org/", SC_VERSION);
+      "https://www.simulationcraft.org/", SC_VERSION);
 
   const char* type =       ( sim.dbc.ptr ?
 #if SC_BETA
@@ -1196,12 +1193,15 @@ void print_html_hotfixes( report::sc_html_stream& os, const sim_t& sim )
       first_group   = false;
     }
 
-    os << "<tr>\n";
-    os << "<td class=\"left\" style=\"white-space:nowrap;\"><strong>"
-       << entry->tag_.substr( 0, 10 ) << "</strong></td>\n";
-    os << "<td class=\"left\" colspan=\"5\"><strong>" << entry->note_
-       << "</strong></td>\n";
-    os << "</tr>\n";
+    if ( entry )
+    {
+      os << "<tr>\n";
+      os << "<td class=\"left\" style=\"white-space:nowrap;\"><strong>"
+         << entry->tag_.substr( 0, 10 ) << "</strong></td>\n";
+      os << "<td class=\"left\" colspan=\"5\"><strong>" << entry->note_
+         << "</strong></td>\n";
+      os << "</tr>\n";
+    }
     if ( const hotfix::effect_hotfix_entry_t* e =
              dynamic_cast<const hotfix::effect_hotfix_entry_t*>( entry ) )
     {
@@ -1444,16 +1444,23 @@ void print_html_( report::sc_html_stream& os, sim_t& sim )
 
   if ( sim.decorated_tooltips )
   {
-    os << "<script type=\"text/javascript\" "
-          "src=\"https://static-azeroth.cursecdn.com/current/js/syndication/"
-          "tt.js\"></script>\n";
+    //Apply the prettification stuff only if its a single report
+    if ( num_players > 1 || k > 1 )
+    {
+      os << R"(<script>var whTooltips = {colorLinks: false, iconizeLinks: false, renameLinks: false};</script>\n)";
+    }
+    else
+    {
+      os << R"(<script>var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};</script>\n)";
+    }
+
+    os << R"(<script type="text/javascript" src="https://wow.zamimg.com/widgets/power.js"></script>\n)";
   }
 
   if ( sim.hosted_html )
   {
     // Google Analytics
-    os << "<script type=\"text/javascript\" "
-          "src=\"http://www.simulationcraft.org/js/ga.js\"></script>\n";
+    os << R"(<script type="text/javascript" src="https://www.simulationcraft.org/js/ga.js"></script>\n)";
   }
 
   print_html_image_load_scripts( os );

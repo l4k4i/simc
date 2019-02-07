@@ -1,6 +1,14 @@
 #ifndef DATA_ENUMS_HH
 #define DATA_ENUMS_HH
 
+enum spell_type
+{
+  SPELL_TYPE_NONE = 0u,
+  SPELL_TYPE_MAGIC,
+  SPELL_TYPE_MELEE,
+  SPELL_TYPE_RANGED
+};
+
 // Types for CombatRatingsMultByILvl.txt. The ordering is defined by dbc_extract outputter (see
 // dbc_extract.py 'scale' output option), however it follows the current game table ordering.
 enum combat_rating_multiplier_type
@@ -77,19 +85,22 @@ enum proc_types
   PROC1_RANGED_TAKEN,
   PROC1_RANGED_ABILITY,
   PROC1_RANGED_ABILITY_TAKEN,
-  PROC1_AOE_HEAL,
-  PROC1_AOE_HEAL_TAKEN,
-  PROC1_AOE_SPELL,
-  PROC1_AOE_SPELL_TAKEN,
-  PROC1_HEAL,
-  PROC1_HEAL_TAKEN,
-  PROC1_SPELL,
-  PROC1_SPELL_TAKEN,
+  PROC1_NONE_HEAL,
+  PROC1_NONE_HEAL_TAKEN,
+  PROC1_NONE_SPELL,
+  PROC1_NONE_SPELL_TAKEN,
+  PROC1_MAGIC_HEAL,
+  PROC1_MAGIC_HEAL_TAKEN,
+  PROC1_MAGIC_SPELL,
+  PROC1_MAGIC_SPELL_TAKEN,
   PROC1_PERIODIC,
   PROC1_PERIODIC_TAKEN,
   PROC1_ANY_DAMAGE_TAKEN,
+  PROC1_TRAP_TRIGGERED,
+  PROC1_MAINHAND_ATTACK,
+  PROC1_OFFHAND_ATTACK,
   // Relevant blizzard flags end here
-  
+
   // We need to separate heal ticks and damage ticks for our
   // system, so define a separate cooldown for them. Registering 
   // cooldowns will automatically infer the correct type from 
@@ -150,14 +161,14 @@ enum proc_flag
   PF_RANGED_TAKEN         = 1 << PROC1_RANGED_TAKEN,
   PF_RANGED_ABILITY       = 1 << PROC1_RANGED_ABILITY,
   PF_RANGED_ABILITY_TAKEN = 1 << PROC1_RANGED_ABILITY_TAKEN,
-  PF_AOE_HEAL             = 1 << PROC1_AOE_HEAL,
-  PF_AOE_HEAL_TAKEN       = 1 << PROC1_AOE_HEAL_TAKEN,
-  PF_AOE_SPELL            = 1 << PROC1_AOE_SPELL,
-  PF_AOE_SPELL_TAKEN      = 1 << PROC1_AOE_SPELL_TAKEN,
-  PF_HEAL                 = 1 << PROC1_HEAL,
-  PF_HEAL_TAKEN           = 1 << PROC1_HEAL_TAKEN,
-  PF_SPELL                = 1 << PROC1_SPELL, // Any "negative" spell
-  PF_SPELL_TAKEN          = 1 << PROC1_SPELL_TAKEN,
+  PF_NONE_HEAL            = 1 << PROC1_NONE_HEAL,
+  PF_NONE_HEAL_TAKEN      = 1 << PROC1_NONE_HEAL_TAKEN,
+  PF_NONE_SPELL           = 1 << PROC1_NONE_SPELL,
+  PF_NONE_SPELL_TAKEN     = 1 << PROC1_NONE_SPELL_TAKEN,
+  PF_MAGIC_HEAL           = 1 << PROC1_MAGIC_HEAL,
+  PF_MAGIC_HEAL_TAKEN     = 1 << PROC1_MAGIC_HEAL_TAKEN,
+  PF_MAGIC_SPELL          = 1 << PROC1_MAGIC_SPELL, // Any "negative" spell
+  PF_MAGIC_SPELL_TAKEN    = 1 << PROC1_MAGIC_SPELL_TAKEN,
   PF_PERIODIC             = 1 << PROC1_PERIODIC, // Any periodic ability landed
   PF_PERIODIC_TAKEN       = 1 << PROC1_PERIODIC_TAKEN,
 
@@ -165,6 +176,7 @@ enum proc_flag
 
   // Irrelevant ones for us
   PF_TRAP_TRIGGERED           = 0x00200000,
+  PF_MAINHAND                 = 0x00400000,
   PF_OFFHAND                  = 0x00800000,
   PF_DEATH                    = 0x01000000,
   PF_JUMP                     = 0x02000000,
@@ -172,13 +184,13 @@ enum proc_flag
   // Helper types
   PF_ALL_DAMAGE               = PF_MELEE | PF_MELEE_ABILITY |
                                 PF_RANGED | PF_RANGED_ABILITY |
-                                PF_AOE_SPELL | PF_SPELL,
-  PF_ALL_HEAL                 = PF_AOE_HEAL | PF_HEAL,
+                                PF_NONE_SPELL | PF_MAGIC_SPELL,
+  PF_ALL_HEAL                 = PF_NONE_HEAL | PF_MAGIC_HEAL,
 
   PF_DAMAGE_TAKEN         = PF_MELEE_TAKEN | PF_MELEE_ABILITY_TAKEN |
                             PF_RANGED_TAKEN | PF_RANGED_ABILITY_TAKEN |
-                            PF_AOE_SPELL_TAKEN | PF_SPELL_TAKEN,
-  PF_ALL_HEAL_TAKEN       = PF_AOE_HEAL_TAKEN | PF_HEAL_TAKEN,
+                            PF_NONE_SPELL_TAKEN | PF_MAGIC_SPELL_TAKEN,
+  PF_ALL_HEAL_TAKEN       = PF_NONE_HEAL_TAKEN | PF_MAGIC_HEAL_TAKEN,
 };
 
 // Qualifier on what result / advanced type allows a proc trigger
@@ -297,7 +309,8 @@ enum item_subclass_weapon
     ITEM_SUBCLASS_WEAPON_SPEAR                = 17,
     ITEM_SUBCLASS_WEAPON_CROSSBOW             = 18,
     ITEM_SUBCLASS_WEAPON_WAND                 = 19,
-    ITEM_SUBCLASS_WEAPON_FISHING_POLE         = 20
+    ITEM_SUBCLASS_WEAPON_FISHING_POLE         = 20,
+    ITEM_SUBCLASS_WEAPON_INVALID              = 31
 };
 
 enum item_subclass_armor
@@ -307,12 +320,13 @@ enum item_subclass_armor
     ITEM_SUBCLASS_ARMOR_LEATHER               = 2,
     ITEM_SUBCLASS_ARMOR_MAIL                  = 3,
     ITEM_SUBCLASS_ARMOR_PLATE                 = 4,
-    ITEM_SUBCLASS_ARMOR_BUCKLER               = 5,
+    ITEM_SUBCLASS_ARMOR_COSMETIC              = 5,
     ITEM_SUBCLASS_ARMOR_SHIELD                = 6,
     ITEM_SUBCLASS_ARMOR_LIBRAM                = 7,
     ITEM_SUBCLASS_ARMOR_IDOL                  = 8,
     ITEM_SUBCLASS_ARMOR_TOTEM                 = 9,
-    ITEM_SUBCLASS_ARMOR_SIGIL                 = 11
+    ITEM_SUBCLASS_ARMOR_SIGIL                 = 10,
+    ITEM_SUBCLASS_ARMOR_RELIC                 = 11
 };
 
 enum item_subclass_consumable
@@ -1154,7 +1168,7 @@ enum effect_subtype_t : unsigned {
     A_358 = 358,
     A_359 = 359,
     A_360 = 360,
-    A_361 = 361,
+    A_OVERIDE_AUTO_ATTACK = 361,
     A_362 = 362,
     A_363 = 363,
     A_364 = 364,
@@ -1171,7 +1185,7 @@ enum effect_subtype_t : unsigned {
     A_380 = 380,
     A_381 = 381,
     A_382 = 382,
-    A_383 = 383,
+    A_IGNORE_SPELL_COOLDOWN = 383,
     A_385 = 385,
     A_389 = 389,
     A_392 = 392,
@@ -1252,11 +1266,15 @@ enum spell_attribute : unsigned
   SX_REQ_MAIN_HAND        = 106u,
   SX_DISABLE_PLAYER_PROCS = 112u,
   SX_DISABLE_TARGET_PROCS = 113u,
+  SX_ALWAYS_HIT           = 114u,
   SX_REQ_OFF_HAND         = 120u,
+  SX_TREAT_AS_PERIODIC    = 121u,
   SX_DISABLE_WEAPON_PROCS = 151u,
+  SX_TICK_ON_APPLICATION  = 169u,
   SX_DOT_HASTED           = 173u,
   SX_REQ_LINE_OF_SIGHT    = 186u,
   SX_DISABLE_PLAYER_MULT  = 221u,
+  SX_TICK_MAY_CRIT        = 265u,
   SX_SCALE_ILEVEL         = 354u,
 };
 

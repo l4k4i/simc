@@ -76,6 +76,7 @@ const char* buff_stack_behavior_string   ( buff_stack_behavior );
 const char* buff_tick_behavior_string   ( buff_tick_behavior );
 const char* buff_tick_time_behavior_string   ( buff_tick_time_behavior );
 std::string rppm_scaling_string       ( unsigned );
+std::string profile_source_string( profile_source );
 
 uint32_t    school_type_component     ( school_e s_type, school_e c_type );
 bool is_match_slot( slot_e slot );
@@ -98,6 +99,7 @@ school_e parse_school_type       ( const std::string& name );
 slot_e parse_slot_type           ( const std::string& name );
 stat_e parse_stat_type           ( const std::string& name );
 scale_metric_e parse_scale_metric( const std::string& name );
+profile_source parse_profile_source( const std::string& name );
 specialization_e parse_specialization_type( const std::string &name );
 movement_direction_e parse_movement_direction( const std::string& name );
 item_subclass_armor parse_armor_type( const std::string& name );
@@ -115,6 +117,8 @@ player_e pet_class_type( pet_e type );
 player_e translate_class_id( int cid );
 player_e translate_class_str( const std::string& s );
 race_e translate_race_id( int rid );
+bool is_alliance( race_e );
+bool is_horde( race_e );
 stat_e translate_item_mod( int item_mod );
 bool is_combat_rating( item_mod_type t );
 int translate_stat( stat_e stat );
@@ -130,6 +134,8 @@ double crit_multiplier( meta_gem_e gem );
 
 std::vector<std::string> string_split( const std::string& str, const std::string& delim );
 std::vector<std::string> string_split_allow_quotes( std::string str, const char* delim );
+template <typename T>
+std::string string_join( const T& container, const std::string& delim = ", " );
 std::string string_strip_quotes( std::string str );
 void replace_all( std::string& s, const std::string&, const std::string& );
 void erase_all( std::string& s, const std::string& from );
@@ -213,9 +219,29 @@ inline unsigned next_power_of_two( unsigned v )
   return v;
 }
 
+void print_chained_exception( const std::exception& e, std::ostream& out = std::cerr, int level =  0);
+void print_chained_exception( std::exception_ptr eptr, std::ostream& out = std::cerr, int level =  0);
+
 } // namespace util
 
 template <typename T>
 std::string util::to_string( const T& t )
 { std::stringstream s; s << t; return s.str(); }
 
+template <typename T>
+std::string util::string_join( const T& container, const std::string& delim )
+{
+  std::stringstream s;
+
+  for ( auto i = container.cbegin(); i < container.cend(); ++i )
+  {
+    if ( i != container.cbegin() && ! delim.empty() )
+    {
+      s << delim;
+    }
+
+    s << util::to_string( *i );
+  }
+
+  return s.str();
+}

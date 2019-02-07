@@ -13,6 +13,10 @@ struct proc_map_t
   const char* proc;
 };
 
+static std::vector<std::string> _spell_type_map {
+  "None", "Magic", "Melee", "Ranged"
+};
+
 std::vector<std::string> _school_map = {
   "Physical",
   "Holy",
@@ -30,7 +34,7 @@ std::vector<std::string> _hotfix_effect_map = {
   "Index",
   "Type",
   "Sub Type",
-  "Average",
+  "Coefficient",
   "Delta",
   "Bonus",
   "SP Coefficient",
@@ -46,12 +50,12 @@ std::vector<std::string> _hotfix_effect_map = {
   "Chain Multiplier",
   "Points per Combo Points",
   "Points per Level",
-  "Die Sides",
   "Mechanic",
   "Chain Targets",
   "Target 1",
   "Target 2",
-  "Value Multiplier"
+  "Value Multiplier",
+  "PvP Coefficient"
 };
 
 std::vector<std::string> _hotfix_spell_map = {
@@ -96,6 +100,8 @@ std::vector<std::string> _hotfix_spell_map = {
   "Tooltip",
   "Variables",
   "Rank",
+  "Required Max Level",
+  "Spell Type"
 };
 
 std::vector<std::string> _hotfix_power_map = {
@@ -260,32 +266,33 @@ std::string power_hotfix_map_str( const spellpower_data_t* power )
 
 const struct proc_map_t _proc_flag_map[] =
 {
-  { PF_KILLED,               "Killed"                  },
-  { PF_KILLING_BLOW,         "Killing Blow"            },
-  { PF_MELEE,                "White Melee"             },
-  { PF_MELEE_TAKEN,          "White Melee Taken"       },
-  { PF_MELEE_ABILITY,        "Yellow Melee"            },
-  { PF_MELEE_ABILITY_TAKEN,  "Yellow Melee Taken"      },
-  { PF_RANGED,               "White Ranged"            },
-  { PF_RANGED_TAKEN,         "White Ranged Taken "     },
-  { PF_RANGED_ABILITY,       "Yellow Ranged"           },
-  { PF_RANGED_ABILITY_TAKEN, "Yellow Ranged Taken"     },
-  { PF_AOE_HEAL,             "AOE Heal"                },
-  { PF_AOE_HEAL_TAKEN,       "AOE Heal Taken"          },
-  { PF_AOE_SPELL,            "AOE Hostile Spell"       },
-  { PF_AOE_SPELL_TAKEN,      "AOE Hostile Spell Taken" },
-  { PF_HEAL,                 "Heal"                    },
-  { PF_HEAL_TAKEN,           "Heal Taken"              },
-  { PF_SPELL,                "Hostile Spell"           },
-  { PF_SPELL_TAKEN,          "Hostile Spell Taken"     },
-  { PF_PERIODIC,             "Periodic"                },
-  { PF_PERIODIC_TAKEN,       "Periodic Taken"          },
-  { PF_ANY_DAMAGE_TAKEN,     "Any Damage Taken"        },
-  { PF_TRAP_TRIGGERED,       "Trap Triggered"          },
-  { PF_JUMP,                 "Proc on jump"            },
-  { PF_OFFHAND,              "Melee Off-Hand"          },
-  { PF_DEATH,                "Death"                   },
-  { 0,                       nullptr                         }
+  { PF_KILLED,               "Killed"                      },
+  { PF_KILLING_BLOW,         "Killing Blow"                },
+  { PF_MELEE,                "White Melee"                 },
+  { PF_MELEE_TAKEN,          "White Melee Taken"           },
+  { PF_MELEE_ABILITY,        "Yellow Melee"                },
+  { PF_MELEE_ABILITY_TAKEN,  "Yellow Melee Taken"          },
+  { PF_RANGED,               "White Ranged"                },
+  { PF_RANGED_TAKEN,         "White Ranged Taken "         },
+  { PF_RANGED_ABILITY,       "Yellow Ranged"               },
+  { PF_RANGED_ABILITY_TAKEN, "Yellow Ranged Taken"         },
+  { PF_NONE_HEAL,            "Generic Heal"                },
+  { PF_NONE_HEAL_TAKEN,      "Generic Heal Taken"          },
+  { PF_NONE_SPELL,           "Generic Hostile Spell"       },
+  { PF_NONE_SPELL_TAKEN,     "Generic Hostile Spell Taken" },
+  { PF_MAGIC_HEAL,           "Magic Heal"                  },
+  { PF_MAGIC_HEAL_TAKEN,     "Magic Heal Taken"            },
+  { PF_MAGIC_SPELL,          "Magic Hostile Spell"         },
+  { PF_MAGIC_SPELL_TAKEN,    "Magic Hostile Spell Taken"   },
+  { PF_PERIODIC,             "Periodic"                    },
+  { PF_PERIODIC_TAKEN,       "Periodic Taken"              },
+  { PF_ANY_DAMAGE_TAKEN,     "Any Damage Taken"            },
+  { PF_TRAP_TRIGGERED,       "Trap Triggered"              },
+  { PF_JUMP,                 "Proc on jump"                },
+  { PF_MAINHAND,             "Melee Main-Hand"             },
+  { PF_OFFHAND,              "Melee Off-Hand"              },
+  { PF_DEATH,                "Death"                       },
+  { 0,                       nullptr                       }
 };
 
 const struct { const char* name; player_e pt; } _class_map[] =
@@ -390,11 +397,15 @@ const std::map<unsigned, std::string> _attribute_strings = {
   { 106, "Requires main-hand weapon"         },
   { 112, "Disable player procs"              },
   { 113, "Disable target procs"              },
+  { 114, "Always hits"                       },
   { 120, "Requires off-hand weapon"          },
+  { 121, "Treat as periodic"                 },
   { 151, "Disable weapon procs"              },
+  { 169, "Tick on application"               },
   { 173, "Periodic effect affected by haste" },
   { 186, "Requires line of sight"            },
   { 221, "Disable player multipliers"        },
+  { 265, "Periodic effect can crit"          },
   { 354, "Scales with item level"            }
 };
 
@@ -691,10 +702,12 @@ static const std::unordered_map<unsigned, const std::string> _effect_subtype_str
   { 345, "Ignore Armor%"                                },
   { 354, "Modify Healing% Based on Target Health%"      },
   { 360, "Duplicate Ability"                            },
+  { 361, "Override Auto-Attack with Spell"              },
   { 366, "Override Spell Power per Attack Power%"       },
   { 374, "Reduce Fall Damage%"                          },
   { 377, "Cast while Moving"                            },
   { 379, "Modify Mana Regen%"                           },
+  { 383, "Ignore Spell Cooldown"                        },
   { 404, "Override Attack Power per Spell Power%"       },
   { 405, "Modify Combat Rating Multiplier"              },
   { 409, "Slow Fall"                                    },
@@ -702,7 +715,7 @@ static const std::unordered_map<unsigned, const std::string> _effect_subtype_str
   { 416, "Hasted Cooldown Duration"                     },
   { 417, "Hasted Global Cooldown"                       },
   { 418, "Modify Max Resource"                          },
-  { 419, "Modify Mana Pool%"                             },
+  { 419, "Modify Mana Pool%"                            },
   { 421, "Modify Absorb% Done"                          },
   { 422, "Modify Absorb% Done"                          },
   { 429, "Modify Pet Damage Done%"                      },
@@ -871,17 +884,18 @@ std::ostringstream& spell_info::effect_to_str( const dbc_t& dbc,
         }
         break;
       case A_PERIODIC_TRIGGER_SPELL:
-        if ( e -> trigger_spell_id() )
+        s << ": ";
+        if ( e -> trigger_spell_id() && dbc.spell( e -> trigger_spell_id() ) != spell_data_t::nil() )
         {
-          if ( dbc.spell( e -> trigger_spell_id() ) != spell_data_t::nil() )
-          {
-            s << ": " << dbc.spell( e -> trigger_spell_id() ) -> name_cstr();
-            if ( e -> period() != timespan_t::zero() )
-              s << " every " << e -> period().total_seconds() << " seconds";
-          }
-          else
-            s << ": (" << e -> trigger_spell_id() << ")";
+          s << dbc.spell( e -> trigger_spell_id() ) -> name_cstr();
         }
+        else
+        {
+          s << "Unknown(" << e->trigger_spell_id() << ")";
+        }
+
+        if ( e -> period() != timespan_t::zero() )
+          s << " every " << e -> period().total_seconds() << " seconds";
         break;
       case A_ADD_FLAT_MODIFIER:
       case A_ADD_PCT_MODIFIER:
@@ -920,18 +934,18 @@ std::ostringstream& spell_info::effect_to_str( const dbc_t& dbc,
     }
     else if ( spell -> scaling_class() == PLAYER_SPECIAL_SCALE8 )
     {
-      item_budget = ilevel_data.item_effect;
+      item_budget = ilevel_data.damage_replace_stat;
     }
 
-    s << item_budget * e -> m_average() * coefficient;
+    s << item_budget * e -> m_coefficient() * coefficient;
 
   }
 
-  if ( e -> m_average() != 0 || e -> m_delta() != 0 )
+  if ( e -> m_coefficient() != 0 || e -> m_delta() != 0 )
   {
-    s << " (avg=" << e -> m_average();
+    s << " (coefficient=" << e -> m_coefficient();
     if ( e -> m_delta() != 0 )
-      s << ", dl=" << e -> m_delta();
+      s << ", delta coefficient=" << e -> m_delta();
     s << ")";
   }
 
@@ -965,6 +979,12 @@ std::ostringstream& spell_info::effect_to_str( const dbc_t& dbc,
   {
     snprintf( tmp_buffer, sizeof( tmp_buffer ), "%.5f", e -> ap_coeff() );
     s << " | AP Coefficient: " << tmp_buffer;
+  }
+
+  if ( e -> pvp_coeff() != 0 )
+  {
+    snprintf( tmp_buffer, sizeof( tmp_buffer ), "%.5f", e -> pvp_coeff() );
+    s << " | PvP Coefficient: " << tmp_buffer;
   }
 
   if ( e -> chain_target() != 0 )
@@ -1112,6 +1132,34 @@ std::ostringstream& spell_info::effect_to_str( const dbc_t& dbc,
     s << std::endl;
   }
 
+  if ( spell->class_family() > 0 )
+  {
+    std::stringstream flags_s;
+
+    for ( size_t i = 0; i < NUM_CLASS_FAMILY_FLAGS; ++i )
+    {
+      for ( size_t bit = 0; bit < 32; ++bit )
+      {
+        if ( ( 1 << bit ) & e->_class_flags[ i ] )
+        {
+          if ( flags_s.tellp() )
+          {
+            flags_s << ", ";
+          }
+
+          flags_s << ( i * 32 + bit );
+        }
+      }
+    }
+
+    if ( flags_s.tellp() )
+    {
+      s << "                   Family Flags: ";
+      s << flags_s.str();
+      s << std::endl;
+    }
+  }
+
   if ( e -> _hotfix != 0 )
   {
     s << "                   Hotfixed: ";
@@ -1139,7 +1187,7 @@ std::string spell_info::to_str( const dbc_t& dbc, const spell_data_t* spell, int
 
   std::string name_str = spell -> name_cstr();
   if ( spell -> rank_str() )
-    name_str += " (" + std::string( spell -> rank_str() ) + ")";
+    name_str += " (rank=" + std::string( spell -> rank_str() ) + ")";
   s <<   "Name             : " << name_str << " (id=" << spell -> id() << ") " << spell_flags( spell ) << std::endl;
 
   if ( spell -> _hotfix != 0 )
@@ -1218,6 +1266,13 @@ std::string spell_info::to_str( const dbc_t& dbc, const spell_data_t* spell, int
   std::string school_string = util::school_type_string( spell -> get_school_type() );
   school_string[ 0 ] = std::toupper( school_string[ 0 ] );
   s << "School           : " << school_string << std::endl;
+
+  std::string spell_type_str = "Unknown(" + util::to_string( spell->dmg_class() ) + ")";
+  if ( spell->dmg_class() < _spell_type_map.size() )
+  {
+    spell_type_str = _spell_type_map[ spell->dmg_class() ];
+  }
+  s << "Spell Type       : " << spell_type_str << std::endl;
 
   for ( size_t i = 0; spell -> _power && i < spell -> _power -> size(); i++ )
   {
@@ -1333,6 +1388,24 @@ std::string spell_info::to_str( const dbc_t& dbc, const spell_data_t* spell, int
     else
       s << spell -> duration().total_seconds() << " seconds";
 
+    s << std::endl;
+  }
+
+  if ( spell->equipped_class() == ITEM_CLASS_WEAPON )
+  {
+    std::vector<std::string> weapon_types;
+    for ( auto wt = ITEM_SUBCLASS_WEAPON_AXE; wt < ITEM_SUBCLASS_WEAPON_FISHING_POLE; ++wt )
+    {
+      if ( spell->equipped_subclass_mask() & ( 1 << static_cast<unsigned>( wt ) ) )
+      {
+        weapon_types.push_back( util::weapon_subclass_string( wt ) );
+      }
+    }
+    s << "Requires weapon  : ";
+    if ( weapon_types.size() > 0 )
+    {
+      s << util::string_join( weapon_types );
+    }
     s << std::endl;
   }
 
@@ -1579,6 +1652,34 @@ std::string spell_info::to_str( const dbc_t& dbc, const spell_data_t* spell, int
     s << std::endl;
   }
 
+  if ( spell->class_family() > 0 )
+  {
+    std::stringstream flags_s;
+
+    for ( size_t i = 0; i < NUM_CLASS_FAMILY_FLAGS; ++i )
+    {
+      for ( size_t bit = 0; bit < 32; ++bit )
+      {
+        if ( ( 1 << bit ) & spell->_class_flags[ i ] )
+        {
+          if ( flags_s.tellp() )
+          {
+            flags_s << ", ";
+          }
+
+          flags_s << ( i * 32 + bit );
+        }
+      }
+    }
+
+    if ( flags_s.tellp() )
+    {
+      s << "Family Flags     : ";
+      s << flags_s.str();
+      s << std::endl;
+    }
+  }
+
   s << "Attributes       : ";
   std::string attr_str;
   for ( unsigned i = 0; i < NUM_SPELL_FLAGS; i++ )
@@ -1796,12 +1897,12 @@ void spell_info::effect_to_xml( const dbc_t& dbc,
     const random_prop_data_t& ilevel_data = dbc.random_property( level );
     double item_budget = ilevel_data.p_epic[ 0 ];
 
-    node -> add_parm( "scaled_value", item_budget * e -> m_average() );
+    node -> add_parm( "scaled_value", item_budget * e -> m_coefficient() );
   }
 
-  if ( e -> m_average() != 0 )
+  if ( e -> m_coefficient() != 0 )
   {
-    node -> add_parm( "multiplier_average", e -> m_average() );
+    node -> add_parm( "multiplier_coefficient", e -> m_coefficient() );
   }
 
   if ( e -> m_delta() != 0 )

@@ -12,11 +12,6 @@
  do anything.
 */
 
-bool action_t::impact_targeting( action_state_t* ) const
-{
-  return true;
-}
-
 bool action_t::execute_targeting( action_t* action ) const
 {
   if ( action->sim->distance_targeting_enabled )
@@ -43,6 +38,7 @@ bool action_t::execute_targeting( action_t* action ) const
   return true;
 }
 
+// This returns a list of all targets currently in range. 
 std::vector<player_t*> action_t::targets_in_range_list(
     std::vector<player_t*>& tl ) const
 {
@@ -65,7 +61,7 @@ std::vector<player_t*> action_t::targets_in_range_list(
   return tl;
 }
 
-std::vector<player_t*> action_t::check_distance_targeting(
+std::vector<player_t*>& action_t::check_distance_targeting(
     std::vector<player_t*>& tl ) const
 {
   if ( sim -> distance_targeting_enabled )
@@ -207,6 +203,11 @@ player_t* action_t::select_target_if_target()
     // No need to check current target
     if ( target == original_target )
       continue;
+
+    if ( !target_ready( target ) )
+    {
+      continue;
+    }
 
     double v = target_if_expr->evaluate();
 

@@ -270,7 +270,7 @@ struct adds_event_t : public raid_event_t
           }
         }
 
-        adds[ i ]->summon( saved_duration );
+        adds[ i ]->summon( duration_time() );
         adds[ i ]->x_position = x_offset + spawn_x_coord;
         adds[ i ]->y_position = y_offset + spawn_y_coord;
 
@@ -292,6 +292,10 @@ struct adds_event_t : public raid_event_t
 
   void _finish() override
   {
+    if ( adds.size() < adds_to_remove )
+    {
+      adds_to_remove = adds.size( );
+    }
     for ( size_t i = 0; i < adds_to_remove; i++ )
     {
       adds[ i ]->dismiss();
@@ -827,8 +831,10 @@ struct heal_event_t : public raid_event_t
   double amount_range;
   double to_pct, to_pct_range;
 
+  heal_t* raid_heal;
+
   heal_event_t( sim_t* s, const std::string& options_str )
-    : raid_event_t( s, "heal" ), amount( 1 ), amount_range( 0 ), to_pct( 0 ), to_pct_range( 0 )
+    : raid_event_t( s, "heal" ), amount( 1 ), amount_range( 0 ), to_pct( 0 ), to_pct_range( 0 ), raid_heal( 0 )
   {
     add_option( opt_float( "amount", amount ) );
     add_option( opt_float( "amount_range", amount_range ) );
@@ -844,6 +850,23 @@ struct heal_event_t : public raid_event_t
 
   virtual void _start() override
   {
+    if ( !raid_heal )
+    {
+      struct raid_heal_t : public heal_t
+      {
+        raid_heal_t( const char* n, player_t* player ) : heal_t( n, player, spell_data_t::nil() )
+        {
+          school      = SCHOOL_HOLY;
+          may_crit    = false;
+          background  = true;
+          trigger_gcd = timespan_t::zero();
+        }
+      };
+
+      raid_heal = new raid_heal_t( name.empty() ? type.c_str() : name.c_str(), sim -> active_player );
+      raid_heal -> init();
+    }
+
     for ( auto p : affected_players )
     {
       double amount_to_heal = 0.0;
@@ -865,15 +888,16 @@ struct heal_event_t : public raid_event_t
       else
       {
         amount_to_heal = sim->rng().range( amount - amount_range, amount + amount_range );
-        p->resource_gain( RESOURCE_HEALTH, amount_to_heal );
       }
 
       // heal if there's any healing to be done
       if ( amount_to_heal > 0.0 )
       {
-        sim->print_log( "{} heals {} for '{}'.", *this, p->name(), amount_to_heal );
+        raid_heal -> base_dd_min = raid_heal -> base_dd_max = amount_to_heal;
+        raid_heal -> target = p;
+        raid_heal -> execute();
 
-        p->resource_gain( RESOURCE_HEALTH, amount_to_heal );
+        sim -> print_log( "Event {} healed {} for '{}' (before player modifiers).", name.c_str(), p -> name(), amount_to_heal );
       }
     }
   }
@@ -1058,7 +1082,16 @@ std::vector<raid_event_t*> get_longest_active_raid_events( const std::vector<rai
     }
   }
 
-  range::sort( result, []( const raid_event_t* l, const raid_event_t* r ) { return l->remains() > r->remains(); } );
+  range::sort( result, []( const raid_event_t* l, const raid_event_t* r ) {
+    timespan_t lv = l->remains(), rv = r->remains();
+    if ( lv == rv )
+    {
+      // Integer comparison to break ties
+      return l < r;
+    }
+
+    return lv > rv;
+  } );
 
   return result;
 }
@@ -1744,4 +1777,13 @@ std::ostream& operator<<( std::ostream& os, const raid_event_t& r )
 {
   os << fmt::format( "Raid event (type={} name={})", r.type, r.name );
   return os;
+}
+
+bool raid_event_t::has_raid_event( sim_t* sim, const std::string& type )
+{
+  auto it = range::find_if( sim->raid_events, [&type]( const std::unique_ptr<raid_event_t>& re ) {
+    return re->type == type;
+  } );
+
+  return it != sim->raid_events.end();
 }

@@ -51,6 +51,7 @@ results.html
 simc_gui.simc
 simc_log.txt
 simc_report.html
+simc_report.json
 simc_report.xml
 .DS_Store
 [Dd]ebug
@@ -96,6 +97,7 @@ lib/*.vcxproj*
 gui/build
 gui/release
 gui/debug
+gui/moc
 gui/*.vcxproj*
 cli/build
 cli/release
@@ -106,4 +108,7 @@ simulationcraft*.db
 engine/simulationcraft.hpp.cpp
 gui/*_resource*
 .vs/
+.vscode/
+.idea/
 .ycm_*
+dbc_extract3/cache/live/DBCache.bin

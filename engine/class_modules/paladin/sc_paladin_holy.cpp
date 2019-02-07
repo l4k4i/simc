@@ -451,24 +451,17 @@ struct holy_avenger_t : public paladin_heal_t
 
 // Judgment - Holy =================================================================
 
-struct judgment_holy_t : public paladin_melee_attack_t
+struct judgment_holy_t : public judgment_t
 {
   judgment_holy_t( paladin_t* p, const std::string& options_str )
-    : paladin_melee_attack_t( "judgment", p, p -> find_specialization_spell( "Judgment" ) )
+    : judgment_t( p, options_str )
   {
-    parse_options( options_str );
-
-    // no weapon multiplier
-    weapon_multiplier = 0.0;
-    may_block = may_parry = may_dodge = false;
-    cooldown -> charges = 1;
-
-    base_multiplier *= 1.0 + p -> passives.holy_paladin -> effectN( 6 ).percent();
+    base_multiplier *= 1.0 + p -> spec.holy_paladin -> effectN( 11 ).percent();
   }
 
   virtual void execute() override
   {
-    paladin_melee_attack_t::execute();
+    judgment_t::execute();
 
     if ( p() -> talents.fist_of_justice -> ok() )
     {
@@ -477,23 +470,15 @@ struct judgment_holy_t : public paladin_melee_attack_t
     }
   }
 
-  proc_types proc_type() const override
-  {
-    return PROC1_MELEE_ABILITY;
-  }
-
   // Special things that happen when Judgment damages target
   void impact( action_state_t* s ) override
   {
     if ( result_is_hit( s -> result ) )
     {
       td( s -> target ) -> buffs.debuffs_judgment -> trigger();
-
-      if ( p() -> talents.judgment_of_light -> ok() )
-        td( s -> target ) -> buffs.judgment_of_light -> trigger( 40 );
     }
 
-    paladin_melee_attack_t::impact( s );
+    judgment_t::impact( s );
   }
 };
 
@@ -595,28 +580,6 @@ struct light_of_dawn_t : public paladin_heal_t
 
       cooldown = p -> cooldowns.light_of_dawn;
   }
-
-    virtual void execute() override
-    {
-        if (p()->topless_tower) {
-            if (p()->shuffled_rngs.topless_tower->trigger())
-            {
-                p()->procs.topless_tower->occur();
-
-                timespan_t proc_duration = timespan_t::from_seconds(p()->topless_tower->effectN(2).base_value());
-                if (p()->buffs.avenging_wrath->check())
-                    p()->buffs.avenging_wrath->extend_duration(p(), proc_duration);
-                else
-                    p()->buffs.avenging_wrath->trigger(1, p()->buffs.avenging_wrath->default_value, -1.0, proc_duration);
-            }
-        }
-
-        if ( p() -> sets -> has_set_bonus( PALADIN_HOLY, T20, B2 ) )
-        {
-            p()->cooldowns.light_of_dawn->adjust( timespan_t::from_seconds(-2.0));
-        }
-
-    }
 };
 
 
@@ -659,7 +622,6 @@ void paladin_t::init_spells_holy()
   talents.devotion_aura              = find_talent_spell( "Devotion Aura" );
   talents.aura_of_sacrifice          = find_talent_spell( "Aura of Sacrifice" );
   talents.aura_of_mercy              = find_talent_spell( "Aura of Mercy" );
-    //    talents.divine_purpose           = find_talent_spell( "Sanctified Wrath" ); // TODO: Fix
   talents.holy_avenger               = find_talent_spell( "Holy Avenger" );
   talents.holy_prism                 = find_talent_spell( "Holy Prism" );
   talents.fervent_martyr             = find_talent_spell( "Fervent Martyr" );
@@ -677,7 +639,6 @@ void paladin_t::init_spells_holy()
   passives.lightbringer           = find_mastery_spell( PALADIN_HOLY );
 
   // Holy Passives
-  passives.holy_insight           = find_specialization_spell( "Holy Insight" );
   passives.infusion_of_light      = find_specialization_spell( "Infusion of Light" );
 
   if ( specialization() == PALADIN_HOLY )

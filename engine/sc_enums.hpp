@@ -10,6 +10,23 @@
 // Enumerations =============================================================
 // annex _e to enumerations
 
+
+// Type of internal execution of an action
+enum class execute_type : unsigned
+{
+  FOREGROUND = 0u,
+  OFF_GCD,
+  CAST_WHILE_CASTING
+};
+
+
+// Source of the profile, defaults to command line / addon / etc
+enum class profile_source
+{
+  DEFAULT, /// Anything non-blizzard-api
+  BLIZZARD_API
+};
+
 // Attack power computation modes for Battle for Azeroth+
 enum attack_power_e
 {
@@ -85,7 +102,11 @@ enum regen_type_e
 enum class buff_tick_behavior
 {
   NONE,
+
+  // tick timer is reset on refresh of the dot/buff (next tick is rescheduled)
   CLIP,
+
+  // tick timer stays intact on refresh of the dot/buff (next tick won't be rescheduled)
   REFRESH
 };
 
@@ -743,9 +764,9 @@ enum slot_e  // these enum values match armory settings
   SLOT_MIN       = 0
 };
 
-// Tiers 13..22 + PVP
+// Tiers 14..22 + PVP
 const unsigned N_TIER   = 10;
-const unsigned MIN_TIER = 13;
+const unsigned MIN_TIER = 14;
 
 // Set bonus .. bonus. They map to a vector internally, so each enum value is just the vector
 // element index.
@@ -788,6 +809,9 @@ enum set_bonus_type_e
   T19,
   T20,
   T21,
+  T21P_G1,
+  T23_GIFT_OF_THE_LOA,
+  T23_KEEPSAKES,
 
   SET_BONUS_MAX
 };
@@ -916,7 +940,7 @@ enum stat_e
   STAT_RESILIENCE_RATING,
   STAT_DODGE_RATING,
   STAT_PARRY_RATING,
-  STAT_BLOCK_RATING,
+  STAT_BLOCK_RATING, // Block CHANCE rating. Block damage reduction is in player_t::composite_block_reduction()
   STAT_PVP_POWER,
   STAT_WEAPON_DPS,
   STAT_WEAPON_OFFHAND_DPS,
@@ -983,9 +1007,11 @@ enum cache_e
   CACHE_CRIT_CHANCE,
   CACHE_ATTACK_CRIT_CHANCE,
   CACHE_SPELL_CRIT_CHANCE,
+  CACHE_RPPM_CRIT,
   CACHE_HASTE,
   CACHE_ATTACK_HASTE,
   CACHE_SPELL_HASTE,
+  CACHE_RPPM_HASTE,
   CACHE_SPEED,
   CACHE_ATTACK_SPEED,
   CACHE_SPELL_SPEED,

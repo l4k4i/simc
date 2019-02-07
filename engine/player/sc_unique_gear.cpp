@@ -2409,7 +2409,7 @@ void item::readiness( special_effect_t& effect )
 
   const spell_data_t* cdr_spell = p -> find_spell( effect.spell_id );
   const random_prop_data_t& budget = p -> dbc.random_property( effect.item -> item_level() );
-  double cdr = 1.0 / ( 1.0 + budget.p_epic[ 0 ] * cdr_spell -> effectN( 1 ).m_average() / 100.0 );
+  double cdr = 1.0 / ( 1.0 + budget.p_epic[ 0 ] * cdr_spell -> effectN( 1 ).m_coefficient() / 100.0 );
 
   if ( p -> level() > 90 )
   { // We have no clue how the trinket actually scales down with level. This will linearly decrease CDR until it hits .90 at level 100.
@@ -2476,7 +2476,7 @@ void item::amplification( special_effect_t& effect )
   }
 
   const random_prop_data_t& budget = p -> dbc.random_property( effect.item -> item_level() );
-  *amp_value = budget.p_epic[ 0 ] * amplify_spell -> effectN( 2 ).m_average() / 100.0;
+  *amp_value = budget.p_epic[ 0 ] * amplify_spell -> effectN( 2 ).m_coefficient() / 100.0;
   if ( p -> level() > 90 )
   { // We have no clue how the trinket actually scales down with level. This will linearly decrease amplification until it hits 0 at level 100.
     double level_nerf = ( static_cast<double>( p -> level() ) - 90 ) / 10.0;
@@ -2611,7 +2611,7 @@ void item::cleave( special_effect_t& effect )
 
   // Needs a damaging result
   effect.proc_flags2_ = PF2_ALL_HIT;
-  effect.proc_chance_ = budget.p_epic[ 0 ] * cleave_driver_spell -> effectN( 1 ).m_average() / 10000.0;
+  effect.proc_chance_ = budget.p_epic[ 0 ] * cleave_driver_spell -> effectN( 1 ).m_coefficient() / 10000.0;
 
   if ( p -> level() > 90 )
   { // We have no clue how the trinket actually scales down with level. This will linearly decrease amplification until it hits 0 at level 100.
@@ -3102,7 +3102,7 @@ struct mark_of_doom_t : public buff_t
     effect = new special_effect_t( p.source );
     effect -> name_str = "mark_of_doom_damage_driver";
     effect -> proc_chance_ = 1.0;
-    effect -> proc_flags_ = PF_SPELL | PF_AOE_SPELL;
+    effect -> proc_flags_ = PF_MAGIC_SPELL | PF_NONE_SPELL;
     effect -> proc_flags2_ = PF2_ALL_HIT;
     p.source -> special_effects.push_back( effect );
 
@@ -3190,7 +3190,7 @@ struct prophecy_of_fear_constructor_t : public item_targetdata_initializer_t
 
 void item::prophecy_of_fear( special_effect_t& effect )
 {
-  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_AOE_SPELL;
+  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_NONE_SPELL;
   effect.proc_flags2_ = PF2_ALL_HIT;
 
   new prophecy_of_fear_driver_t( effect );
@@ -4683,6 +4683,8 @@ void unique_gear::register_target_data_initializers( sim_t* sim )
   sim -> register_target_data_initializer( prophecy_of_fear_constructor_t( 124230, trinkets ) );
 
   register_target_data_initializers_legion( sim );
+  register_target_data_initializers_bfa( sim );
+  azerite::register_azerite_target_data_initializers( sim );
 }
 
 special_effect_t* unique_gear::find_special_effect( player_t* actor, unsigned spell_id, special_effect_e type )
@@ -4867,8 +4869,8 @@ void apply_spell_labels( const spell_data_t* spell, action_t* a )
 
 void unique_gear::sort_special_effects()
 {
-  std::sort( __special_effect_db.begin(), __special_effect_db.end(), cmp_special_effect );
-  std::sort( __fallback_effect_db.begin(), __fallback_effect_db.end(), cmp_special_effect );
+  range::sort( __special_effect_db, cmp_special_effect );
+  range::sort( __fallback_effect_db, cmp_special_effect );
 }
 
 // Apply all label-based modifiers to an action, if the associated spell data for the application ha

@@ -2,7 +2,7 @@ include(../simulationcraft.pri)
 
 TEMPLATE    = app
 TARGET      = SimulationCraft
-CONFIG     += link_prl
+CONFIG     += link_prl c++14
 QT         += network widgets
 LIBS       += -L../lib -lsimcengine
 MOC_DIR     = moc
@@ -55,7 +55,7 @@ macx {
 
   Resources.files = ../Welcome.html ../Welcome.png ../Error.html
   Resources.path = Contents/Resources
-  Profiles.files =  ../profiles/PreRaids ../profiles/Tier21
+  Profiles.files =  ../profiles/PreRaids ../profiles/Tier22 ../profiles/Tier23
   Profiles.path = Contents/Resources/profiles
   Localization.files = ../locale/sc_de.qm ../locale/sc_it.qm ../locale/sc_zh.qm
   Localization.path = Contents/Resources/locale

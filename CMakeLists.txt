@@ -10,7 +10,7 @@ option(SC_NO_THREADING "Disable all dependencies on pthreads" ON)
 option(SC_NO_NETWORKING "Disable all networking related stuff." ON)
 option( SC_USE_OPENSSL  "Disable all networking related stuff." OFF)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # enable colored output with ninja build system
 if(${CMAKE_GENERATOR} STREQUAL "Ninja")

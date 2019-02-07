@@ -4,6 +4,7 @@
 // ==========================================================================
 
 #include "simulationcraft.hpp"
+#include "unique_gear.hpp"
 
 using namespace unique_gear;
 
@@ -141,7 +142,7 @@ namespace item
   // TODO
   // Eye of f'harg / shatug interaction
   // Purely defensive stuff
-  
+
   // 7.2.0 Dungeon
   void dreadstone_of_endless_shadows( special_effect_t& );
 
@@ -168,7 +169,7 @@ namespace item
   Everything
 
   Antorus -----------------------------------
-  
+
   Every DPS trinket implemented.
   Healer trinkets / other rubbish -----------
 
@@ -300,7 +301,7 @@ struct mark_of_the_distant_army_t : public proc_spell_t
 {
   mark_of_the_distant_army_t( player_t* p ) :
     proc_spell_t( "mark_of_the_distant_army",
-      p, p -> find_spell( 191380 ), nullptr )
+      p, dbc::find_spell( p, 191380 ), nullptr )
   {
     // TODO: 2018-07-05 approximated for BfA, should be quite close. Seems to not use weapon dps
     // for attack power calculations. Weird
@@ -373,8 +374,7 @@ void enchants::mark_of_the_hidden_satyr( special_effect_t& effect )
   struct mark_of_the_hidden_satyr_t : public proc_spell_t
   {
     mark_of_the_hidden_satyr_t( const special_effect_t& e ) :
-      proc_spell_t( "mark_of_the_hidden_satyr", e.player,
-        e.player -> find_spell( 191259 ), nullptr )
+      proc_spell_t( "mark_of_the_hidden_satyr", e.player, dbc::find_spell( e.player, 191259 ), nullptr )
     {
       // TODO: 2018-06-27 approximated for BfA, should be quite close. Seems to not use weapon dps
       // for attack power calculations. Weird
@@ -1153,7 +1153,7 @@ void item::tarnished_sentinel_medallion( special_effect_t& effect )
   secondary -> type = SPECIAL_EFFECT_EQUIP;
   secondary -> source = SPECIAL_EFFECT_SOURCE_ITEM;
   // Spell data does not flag AOE spells as being able to proc it
-  secondary -> proc_flags_ = PF_RANGED_ABILITY | PF_RANGED | PF_SPELL | PF_AOE_SPELL | PF_PERIODIC;
+  secondary -> proc_flags_ = PF_RANGED_ABILITY | PF_RANGED | PF_MAGIC_SPELL | PF_NONE_SPELL | PF_PERIODIC;
   secondary -> proc_flags2_ = PF2_ALL_HIT;
   secondary -> item = effect.item;
   secondary -> spell_id = effect.spell_id;
@@ -1295,7 +1295,7 @@ void item::umbral_moonglaives( special_effect_t& effect )
 void item::engine_of_eradication( special_effect_t& effect )
 {
   auto primary_stat = effect.player -> convert_hybrid_stat( STAT_STR_AGI );
-  
+
   double amount = effect.trigger() -> effectN( 3 ).average( effect.item );
   stat_buff_t* buff = debug_cast<stat_buff_t*>( buff_t::find( effect.player, "demonic_vigor" ) );
   if ( buff == nullptr )
@@ -1848,7 +1848,7 @@ struct norgannons_command_t : public dbc_proc_callback_t
 
 void item::norgannons_prowess( special_effect_t& effect )
 {
-  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_AOE_SPELL;
+  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_NONE_SPELL;
 
   // Pre-create the base trinket buff; we will use it as the "mark" buff for the pantheon state
   // system
@@ -1861,7 +1861,7 @@ void item::norgannons_prowess( special_effect_t& effect )
   secondary -> source = SPECIAL_EFFECT_SOURCE_ITEM;
   secondary -> type = SPECIAL_EFFECT_EQUIP;
   secondary -> spell_id = 256836;
-  secondary -> proc_flags_ = PF_SPELL | PF_AOE_SPELL | PF_PERIODIC;
+  secondary -> proc_flags_ = PF_MAGIC_SPELL | PF_NONE_SPELL | PF_PERIODIC;
   secondary -> proc_flags2_ = PF2_ALL_HIT | PF2_PERIODIC_DAMAGE;
 
   effect.player -> special_effects.push_back( secondary );
@@ -1958,7 +1958,7 @@ struct personnel_decimator_driver_t : public dbc_proc_callback_t
 
 void item::prototype_personnel_decimator( special_effect_t& effect )
 {
-  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_AOE_SPELL;
+  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_NONE_SPELL;
   effect.execute_action = create_proc_action<personnel_decimator_t>( "personnel_decimator", effect );
 
   new personnel_decimator_driver_t( effect );
@@ -1991,7 +1991,7 @@ struct injector_proc_cb_t : public dbc_proc_callback_t
 
 void item::acrid_catalyst_injector( special_effect_t& effect )
 {
-  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_AOE_SPELL;
+  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_NONE_SPELL;
   effect.proc_flags2_ = PF2_CRIT;
 
   auto p = effect.player;
@@ -2227,7 +2227,7 @@ struct shadow_blades_buff_t : public buff_t
 
 void item::sheath_of_asara( special_effect_t& effect )
 {
-  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_AOE_SPELL;
+  effect.proc_flags_ = effect.driver() -> proc_flags() | PF_NONE_SPELL;
   effect.custom_buff = new shadow_blades_buff_t( effect );
   new dbc_proc_callback_t( effect.item, effect );
 }
@@ -2732,7 +2732,7 @@ struct majordomos_dinner_bell_t : proc_spell_t
   void execute() override
   {
     // The way this works, despite the tooltip, is that the buff matches your current food buff on tank specs ONLY
-    
+
     int selected_buff = -1;
 
     if ( player -> consumables.food && player -> role == ROLE_TANK )
@@ -2756,7 +2756,7 @@ struct majordomos_dinner_bell_t : proc_spell_t
         }
       }
     }
-    
+
     // If you don't have a secondary stat food buff, or aren't on a tank specialization the buff will be random
     selected_buff = (int) ( player -> sim -> rng().real() * buffs.size() );
 
@@ -3933,7 +3933,7 @@ struct poisoned_dreams_t : public buff_t
     effect = new special_effect_t( p.source );
     effect -> name_str = "poisoned_dreams_damage_driver";
     effect -> proc_chance_ = 1.0;
-    effect -> proc_flags_ = PF_SPELL | PF_AOE_SPELL | PF_PERIODIC;
+    effect -> proc_flags_ = PF_MAGIC_SPELL | PF_NONE_SPELL | PF_PERIODIC;
     effect -> proc_flags2_ = PF2_ALL_HIT | PF2_PERIODIC_DAMAGE;
     p.source -> special_effects.push_back( effect );
 
@@ -4023,7 +4023,7 @@ struct bough_of_corruption_constructor_t : public item_targetdata_initializer_t
 };
 void item::bough_of_corruption( special_effect_t& effect )
 {
-  effect.proc_flags_ = effect.driver() -> proc_flags()  | PF_AOE_SPELL;
+  effect.proc_flags_ = effect.driver() -> proc_flags()  | PF_NONE_SPELL;
   effect.proc_flags2_ = PF2_ALL_HIT;
 
   new bough_of_corruption_driver_t( effect );
@@ -4613,86 +4613,6 @@ void item::corrupted_starlight( special_effect_t& effect )
 
 // Darkmoon Decks ===========================================================
 
-struct darkmoon_deck_t
-{
-  player_t* player;
-  std::vector<stat_buff_t*> cards;
-  buff_t* top_card;
-  timespan_t shuffle_period;
-
-  darkmoon_deck_t( const special_effect_t& effect, const std::vector<unsigned>& c ) :
-    player( effect.player ), top_card( nullptr ),
-    shuffle_period( effect.driver() -> effectN( 1 ).period() )
-  {
-    for ( size_t i = 0; i < c.size(); i++ )
-    {
-      const spell_data_t* s = player -> find_spell( c[ i ] );
-      assert( s -> found() );
-
-      std::string n = s -> name_cstr();
-      ::util::tokenize( n );
-
-      cards.push_back( make_buff<stat_buff_t>( player, n, s, effect.item ) );
-    }
-  }
-
-  void shuffle()
-  {
-    if ( top_card )
-      top_card -> expire();
-
-    top_card = cards[ player -> rng().range( size_t(), cards.size() ) ];
-
-    top_card -> trigger();
-  }
-};
-
-struct shuffle_event_t : public event_t
-{
-  darkmoon_deck_t* deck;
-
-  static timespan_t delta_time( sim_t& sim, bool initial, darkmoon_deck_t* deck )
-  {
-    if ( initial )
-    {
-      return deck->shuffle_period * sim.rng().real();
-    }
-    else
-    {
-      return deck->shuffle_period;
-    }
-  }
-
-  shuffle_event_t( darkmoon_deck_t* d, bool initial = false )
-    : event_t( *d->player, delta_time( *d -> player -> sim, initial, d ) ), deck( d )
-  {
-    /* Shuffle when we schedule an event instead of when it executes.
-    This will assure the deck starts shuffled */
-    deck->shuffle();
-  }
-
-  const char* name() const override
-  { return "shuffle_event"; }
-
-  void execute() override
-  {
-    make_event<shuffle_event_t>( sim(), deck );
-  }
-};
-
-struct shuffle_activator_t
-{
-  darkmoon_deck_t* data;
-
-  shuffle_activator_t( darkmoon_deck_t* d ) : data( d )
-  { }
-
-  void operator()(void)
-  {
-    make_event<shuffle_event_t>( *data -> player -> sim, data, true );
-  }
-};
-
 // TODO: The sim could use an "arise" and "demise" callback, it's kinda wasteful to call these
 // things per every player actor shifting in the non-sleeping list. Another option would be to make
 // (yet another list) that holds active, non-pet players.
@@ -4719,9 +4639,12 @@ void item::darkmoon_deck( special_effect_t& effect )
       return;
   }
 
-  auto d = new darkmoon_deck_t( effect, cards );
+  auto d = new darkmoon_buff_deck_t<stat_buff_t>( effect, cards );
+  d->initialize();
 
-  effect.player -> callbacks_on_arise.emplace_back( shuffle_activator_t( d ) );
+  effect.player->register_combat_begin( [ d ]( player_t* ) {
+    make_event<shuffle_event_t>( *d->player -> sim, d, true );
+  } );
 }
 
 // Elementium Bomb Squirrel =================================================
@@ -4962,7 +4885,7 @@ void item::moonlit_prism( special_effect_t& effect )
   effect2 -> proc_chance_ = 1.0;
   effect2 -> spell_id = effect.driver() -> id();
   effect2 -> cooldown_ = timespan_t::zero();
-  effect2 -> proc_flags_ = PF_RANGED | PF_RANGED_ABILITY | PF_SPELL | PF_AOE_SPELL;
+  effect2 -> proc_flags_ = PF_RANGED | PF_RANGED_ABILITY | PF_MAGIC_SPELL | PF_NONE_SPELL;
   effect.player -> special_effects.push_back( effect2 );
 
   // Create callback; it will be enabled when the buff is active.
@@ -5459,7 +5382,7 @@ struct maddening_whispers_t : public buff_t
     effect2 -> source       = SPECIAL_EFFECT_SOURCE_ITEM;
     effect2 -> name_str     = "maddening_whispers_driver";
     effect2 -> proc_chance_ = 1.0;
-    effect2 -> proc_flags_  = PF_SPELL | PF_AOE_SPELL;
+    effect2 -> proc_flags_  = PF_MAGIC_SPELL | PF_NONE_SPELL;
     effect2 -> proc_flags2_  = PF2_ALL_HIT;
     effect.player -> special_effects.push_back( effect2 );
 
@@ -6061,7 +5984,7 @@ void consumables::lavish_suramar_feast( special_effect_t& effect )
   }
 
   // TODO: Is this actually spec specific?
-  if ( effect.player -> role == ROLE_TANK && !effect.player->sim->legion_opts.lavish_feast_as_dps )
+  if ( effect.player -> role == ROLE_TANK && !effect.player->sim->feast_as_dps )
   {
     effect.stat = STAT_STAMINA;
     effect.trigger_spell_id = 201641;

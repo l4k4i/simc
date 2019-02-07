@@ -1,10 +1,10 @@
-#define CLASS_ABILITY_SIZE (49)
+#define CLASS_ABILITY_SIZE (51)
 #define CLASS_ABILITY_TREE_SIZE (6)
 
 #ifndef MAX_CLASS
 #define MAX_CLASS (13)
 #endif
-// Class based active abilities, wow build 27101
+// Class based active abilities, wow build 8.1.0.29235
 static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SIZE] = {
   {
     {
@@ -257,7 +257,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       257044, // Rapid Fire
        56641, // Steady Shot
       187698, // Tar Trap
-      193526, // Trueshot
+      288613, // Trueshot
            0,
     },
     // Survival tree, 18 abilities
@@ -285,7 +285,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
     {
            0,
     },
-    // Pet tree, 49 abilities
+    // Pet tree, 51 abilities
     {
       263446, // Acid Spit (Special Ability)
       160011, // Agile Reflexes (Special Ability)
@@ -310,6 +310,8 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       263853, // Infected Bite (Special Ability)
        19577, // Intimidation
        24394, // Intimidation
+       83381, // Kill Command
+      259277, // Kill Command
       263423, // Lock Jaw (Special Ability)
        54680, // Monstrous Bite (Special Ability)
       264264, // Nether Shock (Special Ability)
@@ -599,18 +601,15 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
     {
            0,
     },
-    // Pet tree, 10 abilities
+    // Pet tree, 7 abilities
     {
-      207260, // Arrow Spray
        81280, // Blood Burst
        47468, // Claw
-      212333, // Cleaver
        51963, // Gargoyle Strike
        47481, // Gnaw
        47484, // Huddle
        47482, // Leap
       212423, // Skulker Shot
-      198715, // Val'kyr Strike
            0,
     },
   },
@@ -627,14 +626,14 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
         2484, // Earthbind Totem
         2645, // Ghost Wolf
        32182, // Heroism
-       51514, // Hex
-      210873, // Hex
-      211004, // Hex
-      211010, // Hex
-      211015, // Hex
-      269352, // Hex
-      277778, // Hex
-      277784, // Hex
+       51514, // Hex (Frog)
+      210873, // Hex (Compy)
+      211004, // Hex (Spider)
+      211010, // Hex (Snake)
+      211015, // Hex (Cockroach)
+      269352, // Hex (Skeletal Hatchling)
+      277778, // Hex (Zandalari Tendonripper)
+      277784, // Hex (Wicker Mongrel)
          370, // Purge
       205495, // Stormkeeper (Artifact)
         8143, // Tremor Totem (Earth Totem)
@@ -904,11 +903,10 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
     {
            0,
     },
-    // Pet tree, 43 abilities
+    // Pet tree, 42 abilities
     {
        89766, // Axe Toss (Special Ability)
       267997, // Bile Spit
-        6307, // Blood Pact (Special Ability)
       171011, // Burning Presence (Special Ability)
         3716, // Consuming Shadows (Basic Attack)
       170995, // Cripple
@@ -975,7 +973,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       126892, // Zen Pilgrimage
            0,
     },
-    // Brewmaster tree, 18 abilities
+    // Brewmaster tree, 19 abilities
     {
       205523, // Blackout Strike
       115181, // Breath of Fire
@@ -993,6 +991,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       119582, // Purifying Brew
       116705, // Spear Hand Strike
       227291, // Stomp
+      278767, // Training of Niuzao
       116670, // Vivify
       115176, // Zen Meditation
            0,
@@ -1016,17 +1015,22 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       116670, // Vivify
            0,
     },
-    // Windwalker tree, 21 abilities
+    // Windwalker tree, 27 abilities
     {
       116768, // Blackout Kick!
       211432, // Combo Master
       196061, // Crosswinds
+      286587, // Dance of Chi-Ji
       218164, // Detox
       116095, // Disable
       113656, // Fists of Fury
       101545, // Flying Serpent Kick
       115057, // Flying Serpent Kick
       252768, // Focus of Xuen
+      287062, // Fury of Xuen
+      287063, // Fury of Xuen
+      288636, // Glory of the Dawn
+      285594, // Good Karma
       213114, // Hidden Master's Forbidden Touch
       119381, // Leg Sweep
       228287, // Mark of the Crane
@@ -1035,6 +1039,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       116705, // Spear Hand Strike
       101546, // Spinning Crane Kick
       137639, // Storm, Earth, and Fire
+      278710, // Swift Roundhouse
       242387, // Thunderfist
       115080, // Touch of Death
       122470, // Touch of Karma
@@ -1083,7 +1088,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       114282, // Treant Form (Shapeshift)
            0,
     },
-    // Balance tree, 22 abilities
+    // Balance tree, 26 abilities
     {
        22812, // Barkskin
       194223, // Celestial Alignment
@@ -1095,10 +1100,12 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       202768, // Half Moon (Artifact)
       274282, // Half Moon
        29166, // Innervate
+      279641, // Lunar Shrapnel
       194153, // Lunar Strike (Lunar)
        24858, // Moonkin Form
       209406, // Oneth's Intuition
       209407, // Oneth's Overconfidence
+      157228, // Owlkin Frenzy
         5215, // Prowl
         2782, // Remove Corruption
        78675, // Solar Beam
@@ -1106,10 +1113,12 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
         2908, // Soothe
       191034, // Starfall
        78674, // Starsurge
+      202461, // Stellar Drift
+      272873, // Streaking Star
        93402, // Sunfire (Solar)
            0,
     },
-    // Feral tree, 21 abilities
+    // Feral tree, 22 abilities
     {
       210705, // Ashamane's Rip
       106951, // Berserk
@@ -1118,6 +1127,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       210649, // Feral Instinct
       146874, // Feral Rage
        22568, // Ferocious Bite
+      276026, // Iron Jaws
        22570, // Maim
       155625, // Moonfire
        69369, // Predatory Swiftness
@@ -1134,10 +1144,11 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
         5217, // Tiger's Fury
            0,
     },
-    // Guardian tree, 17 abilities
+    // Guardian tree, 18 abilities
     {
        22812, // Barkskin
       203958, // Brambles
+      289315, // Burst of Savagery
        22842, // Frenzied Regeneration
           99, // Incapacitating Roar
       192081, // Ironfur
@@ -1205,7 +1216,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       198793, // Vengeful Retreat
            0,
     },
-    // Havoc tree, 10 abilities
+    // Havoc tree, 11 abilities
     {
       202446, // Anguish
       211796, // Chaos Blades
@@ -1217,6 +1228,7 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
       208605, // Nemesis
       217070, // Rage of the Illidari
       281854, // Torment
+      275148, // Unbound Chaos
            0,
     },
     // Vengeance tree, 15 abilities
@@ -1249,9 +1261,9 @@ static unsigned __class_ability_data[][CLASS_ABILITY_TREE_SIZE][CLASS_ABILITY_SI
     },
   },
 };
-#define TREE_SPECIALIZATION_SIZE (35)
+#define TREE_SPECIALIZATION_SIZE (34)
 
-// Talent tree specialization abilities, wow build 27101
+// Talent tree specialization abilities, wow build 8.1.0.29235
 static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZATION_SIZE] = {
   // Specialization abilities for Hunter pets
   {
@@ -1404,6 +1416,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
       200327, // Blessing of Sacrifice (Rank 2)
       275773, // Judgment
       231644, // Judgment (Rank 2)
+      289941, // Holy Shock
            0,
     },
     // Specialization abilities for Protection
@@ -1511,7 +1524,6 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
       186387, // Bursting Shot
       162697, // Stat Negation Aura - Agility DPS
       193468, // Mastery: Sniper Training (Mastery)
-      193526, // Trueshot
          781, // Disengage
       231549, // Disengage (Rank 2)
       109304, // Exhilaration
@@ -1524,6 +1536,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
       257621, // Trick Shots
       155228, // Lone Wolf
       260240, // Precise Shots
+      288613, // Trueshot
            0,
     },
     // Specialization abilities for Survival
@@ -1660,7 +1673,6 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
       231691, // Sprint (Rank 2)
       231716, // Eviscerate (Rank 2)
       231718, // Shadowstrike (Rank 2)
-      245639, // Shuriken Combo
       245751, // Sprint (Rank 2)
       277950, // Shadow's Grasp
            0,
@@ -1732,6 +1744,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
         8122, // Psychic Scream
        64901, // Symbol of Hope
         2096, // Mind Vision
+      285485, // Focused Will (Rank 2)
            0,
     },
     // Specialization abilities for Shadow
@@ -1765,6 +1778,8 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
        73325, // Leap of Faith
        48045, // Mind Sear
       190719, // Shadow Word: Death
+       45243, // Focused Will
+      280752, // Hallucinations
            0,
     },
     {
@@ -1815,6 +1830,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
        81229, // Runic Empowerment
       278223, // Death Strike (Rank 2)
        51271, // Pillar of Frost
+       48263, // Veteran of the Third War
            0,
     },
     // Specialization abilities for Unholy
@@ -1839,6 +1855,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
        51462, // Runic Corruption
       275699, // Apocalypse
       278223, // Death Strike (Rank 2)
+       48263, // Veteran of the Third War
            0,
     },
     {
@@ -2077,6 +2094,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
         1122, // Summon Infernal (Guardian)
        30283, // Shadowfury
       196406, // Backdraft
+      157903, // Warlock
            0,
     },
     {
@@ -2240,7 +2258,6 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
       228545, // Shapeshift Form (Shapeshift)
       231052, // Rake (Rank 2)
       231055, // Tiger's Fury (Rank 2)
-      231056, // Ferocious Bite (Rank 2)
       231057, // Shred (Rank 3)
       231063, // Shred (Rank 2)
       159456, // Travel Form (Rank 2)
@@ -2278,6 +2295,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
       270100, // Bear Form (Rank 2)
       273048, // Frenzied Regeneration (Rank 2)
         2908, // Soothe
+      288826, // Stampeding Roar (Rank 2)
            0,
     },
     // Specialization abilities for Restoration
@@ -2362,7 +2380,7 @@ static unsigned __tree_specialization_data[][MAX_SPECS_PER_CLASS][TREE_SPECIALIZ
 };
 #define CLASS_MASTERY_ABILITY_SIZE (1)
 
-// Class mastery abilities, wow build 27101
+// Class mastery abilities, wow build 8.1.0.29235
 static unsigned __class_mastery_ability_data[MAX_CLASS][MAX_SPECS_PER_CLASS][CLASS_MASTERY_ABILITY_SIZE] = {
   {
     {
@@ -2601,7 +2619,7 @@ static unsigned __class_mastery_ability_data[MAX_CLASS][MAX_SPECS_PER_CLASS][CLA
 #define MAX_RACE (31)
 #endif
 
-// Racial abilities, wow build 27101
+// Racial abilities, wow build 8.1.0.29235
 static unsigned __race_ability_data[MAX_RACE][MAX_CLASS][RACE_ABILITY_SIZE] = {
   {
     {     0, },
@@ -3527,9 +3545,9 @@ static unsigned __race_ability_data[MAX_RACE][MAX_CLASS][RACE_ABILITY_SIZE] = {
     },
   },
 };
-#define SET_BONUS_DATA_SIZE (690)
+#define SET_BONUS_DATA_SIZE (724)
 
-// Set bonus data, wow build 27101
+// Set bonus data, wow build 8.1.0.29235
 static item_set_bonus_t __set_bonus_data[SET_BONUS_DATA_SIZE] = {
   // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
   { "Gladiator's Battlegear"                     ,        "pvp",      0,  1230,    0,   2,   1,   71, 165636, { 127055, 127081, 127092, 127103, 127114,  0 } },
@@ -4174,21 +4192,19 @@ static item_set_bonus_t __set_bonus_data[SET_BONUS_DATA_SIZE] = {
   { "Demonbane Armor"                            ,     "tier20",     13,  1302,   20,   4,  12,  581, 242229, { 147127, 147128, 147129, 147130, 147131, 147132,  0 } },
   { "Juggernaut Battlegear"                      ,     "tier21",     14,  1319,   21,   2,   1,   71, 251878, { 152178, 152179, 152180, 152181, 152182, 152183,  0 } },
   { "Juggernaut Battlegear"                      ,     "tier21",     14,  1319,   21,   2,   1,   72, 251880, { 152178, 152179, 152180, 152181, 152182, 152183,  0 } },
-  { "Juggernaut Battlegear"                      ,     "tier21",     14,  1319,   21,   2,   1,   73, 251882, { 152178, 152179, 152180, 152181, 152182, 152183,  0 } },
   { "Juggernaut Battlegear"                      ,     "tier21",     14,  1319,   21,   2,   1,   73, 188635, { 152178, 152179, 152180, 152181, 152182, 152183,  0 } },
   { "Juggernaut Battlegear"                      ,     "tier21",     14,  1319,   21,   4,   1,   71, 251879, { 152178, 152179, 152180, 152181, 152182, 152183,  0 } },
   { "Juggernaut Battlegear"                      ,     "tier21",     14,  1319,   21,   4,   1,   73, 251883, { 152178, 152179, 152180, 152181, 152182, 152183,  0 } },
   { "Juggernaut Battlegear"                      ,     "tier21",     14,  1319,   21,   4,   1,   72, 200853, { 152178, 152179, 152180, 152181, 152182, 152183,  0 } },
   { "Light's Vanguard Battleplate"               ,     "tier21",     14,  1324,   21,   2,   2,   65, 251863, { 152148, 152149, 152150, 152151, 152152, 152153,  0 } },
   { "Light's Vanguard Battleplate"               ,     "tier21",     14,  1324,   21,   2,   2,   66, 251869, { 152148, 152149, 152150, 152151, 152152, 152153,  0 } },
-  // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
   { "Light's Vanguard Battleplate"               ,     "tier21",     14,  1324,   21,   2,   2,   70, 251867, { 152148, 152149, 152150, 152151, 152152, 152153,  0 } },
+  // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
   { "Light's Vanguard Battleplate"               ,     "tier21",     14,  1324,   21,   4,   2,   65, 251865, { 152148, 152149, 152150, 152151, 152152, 152153,  0 } },
   { "Light's Vanguard Battleplate"               ,     "tier21",     14,  1324,   21,   4,   2,   66, 251870, { 152148, 152149, 152150, 152151, 152152, 152153,  0 } },
   { "Light's Vanguard Battleplate"               ,     "tier21",     14,  1324,   21,   4,   2,   70, 251868, { 152148, 152149, 152150, 152151, 152152, 152153,  0 } },
   { "Serpentstalker Guise"                       ,     "tier21",     14,  1327,   21,   2,   3,  253, 251755, { 152130, 152131, 152132, 152133, 152134, 152135,  0 } },
   { "Serpentstalker Guise"                       ,     "tier21",     14,  1327,   21,   2,   3,  255,  70847, { 152130, 152131, 152132, 152133, 152134, 152135,  0 } },
-  { "Serpentstalker Guise"                       ,     "tier21",     14,  1327,   21,   2,   3,  254,  70855, { 152130, 152131, 152132, 152133, 152134, 152135,  0 } },
   { "Serpentstalker Guise"                       ,     "tier21",     14,  1327,   21,   2,   3,  254,  70854, { 152130, 152131, 152132, 152133, 152134, 152135,  0 } },
   { "Serpentstalker Guise"                       ,     "tier21",     14,  1327,   21,   4,   3,  253, 251756, { 152130, 152131, 152132, 152133, 152134, 152135,  0 } },
   { "Serpentstalker Guise"                       ,     "tier21",     14,  1327,   21,   4,   3,  255, 203638, { 152130, 152131, 152132, 152133, 152134, 152135,  0 } },
@@ -4207,9 +4223,9 @@ static item_set_bonus_t __set_bonus_data[SET_BONUS_DATA_SIZE] = {
   { "Gilded Seraph's Raiment"                    ,     "tier21",     14,  1323,   21,   4,   5,  258, 251846, { 152154, 152155, 152156, 152157, 152158, 152159,  0 } },
   { "Dreadwake Armor"                            ,     "tier21",     14,  1330,   21,   2,   6,  250, 251876, { 152112, 152113, 152114, 152115, 152116, 152117,  0 } },
   { "Dreadwake Armor"                            ,     "tier21",     14,  1330,   21,   2,   6,  251, 251873, { 152112, 152113, 152114, 152115, 152116, 152117,  0 } },
-  // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
   { "Dreadwake Armor"                            ,     "tier21",     14,  1330,   21,   2,   6,  252, 251871, { 152112, 152113, 152114, 152115, 152116, 152117,  0 } },
   { "Dreadwake Armor"                            ,     "tier21",     14,  1330,   21,   4,   6,  250, 251877, { 152112, 152113, 152114, 152115, 152116, 152117,  0 } },
+  // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
   { "Dreadwake Armor"                            ,     "tier21",     14,  1330,   21,   4,   6,  251, 251875, { 152112, 152113, 152114, 152115, 152116, 152117,  0 } },
   { "Dreadwake Armor"                            ,     "tier21",     14,  1330,   21,   4,   6,  252, 251872, { 152112, 152113, 152114, 152115, 152116, 152117,  0 } },
   { "Garb of Venerated Spirits"                  ,     "tier21",     14,  1321,   21,   2,   7,  262, 251757, { 152166, 152167, 152168, 152169, 152170, 152171,  0 } },
@@ -4233,9 +4249,9 @@ static item_set_bonus_t __set_bonus_data[SET_BONUS_DATA_SIZE] = {
   { "Chi'Ji's Battlegear"                        ,     "tier21",     14,  1325,   21,   2,  10,  268, 251829, { 152142, 152143, 152144, 152145, 152146, 152147,  0 } },
   { "Chi'Ji's Battlegear"                        ,     "tier21",     14,  1325,   21,   2,  10,  270, 251825, { 152142, 152143, 152144, 152145, 152146, 152147,  0 } },
   { "Chi'Ji's Battlegear"                        ,     "tier21",     14,  1325,   21,   2,  10,  269, 251823, { 152142, 152143, 152144, 152145, 152146, 152147,  0 } },
-  // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
   { "Chi'Ji's Battlegear"                        ,     "tier21",     14,  1325,   21,   4,  10,  268, 251830, { 152142, 152143, 152144, 152145, 152146, 152147,  0 } },
   { "Chi'Ji's Battlegear"                        ,     "tier21",     14,  1325,   21,   4,  10,  270, 251826, { 152142, 152143, 152144, 152145, 152146, 152147,  0 } },
+  // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
   { "Chi'Ji's Battlegear"                        ,     "tier21",     14,  1325,   21,   4,  10,  269, 251821, { 152142, 152143, 152144, 152145, 152146, 152147,  0 } },
   { "Bearmantle Battlegear"                      ,     "tier21",     14,  1328,   21,   2,  11,  102, 251803, { 152124, 152125, 152126, 152127, 152128, 152129,  0 } },
   { "Bearmantle Battlegear"                      ,     "tier21",     14,  1328,   21,   2,  11,  103, 251789, { 152124, 152125, 152126, 152127, 152128, 152129,  0 } },
@@ -4249,10 +4265,47 @@ static item_set_bonus_t __set_bonus_data[SET_BONUS_DATA_SIZE] = {
   { "Felreaper Vestments"                        ,     "tier21",     14,  1329,   21,   2,  12,  581, 251770, { 152118, 152119, 152120, 152121, 152122, 152123,  0 } },
   { "Felreaper Vestments"                        ,     "tier21",     14,  1329,   21,   4,  12,  577, 251769, { 152118, 152119, 152120, 152121, 152122, 152123,  0 } },
   { "Felreaper Vestments"                        ,     "tier21",     14,  1329,   21,   4,  12,  581, 251774, { 152118, 152119, 152120, 152121, 152122, 152123,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   1,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   2,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   3,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   4,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   5,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   6,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   7,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   8,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,   9,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,  10,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,  11,   -1, 277522, { 158362, 159631,  0 } },
+  { "Waycrest Legacy"                            , "waycrests_legacy",     15,  1439,   21,   2,  12,   -1, 277522, { 158362, 159631,  0 } },
+  // Set bonus name                              ,      OptName, EnumID, SetID, Tier, Bns, Cls, Spec,  Spell, Items
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   1,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   2,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   3,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   4,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   5,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   6,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   7,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   8,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,   9,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,  10,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,  11,   -1, 290263, { 165567, 165512,  0 } },
+  { "Gift of the Loa"                            , "gift_of_the_loa",     16,  1442,   23,   2,  12,   -1, 290263, { 165567, 165512,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   1,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   2,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   3,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   4,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   5,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   6,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   7,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   8,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,   9,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,  10,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,  11,   -1, 290362, { 165604, 165566,  0 } },
+  { "Keepsakes of the Resolute Commandant"       ,  "keepsakes",     17,  1443,   23,   2,  12,   -1, 290362, { 165604, 165566,  0 } },
 };
-#define RPPMMOD_SIZE (938)
+#define RPPMMOD_SIZE (933)
 
-// 938 RPPM Modifiers, wow build level 27101
+// 933 RPPM Modifiers, wow build level 8.1.0.29235
 static struct rppm_modifier_t __rppmmodifier_data[] = {
   {  17495,    4,  1,  1.0000 },
   {  27656,    4,  1,  1.0000 },
@@ -4303,7 +4356,6 @@ static struct rppm_modifier_t __rppmmodifier_data[] = {
   { 137595,  268,  4, -0.4000 },
   { 137595,   66,  4, -0.4000 },
   { 137595,   73,  4, -0.4000 },
-  { 138120,   72,  4, -0.6250 },
   { 138365,    4,  1,  1.0000 },
   { 138367,    4,  1,  1.0000 },
   { 138849,    4,  1,  1.0000 },
@@ -4623,7 +4675,6 @@ static struct rppm_modifier_t __rppmmodifier_data[] = {
   { 238498,   66,  4, -0.5000 },
   { 238524,  435,  3, -0.5000 },
   { 238524,    4,  1,  1.0000 },
-  { 241496,    4,  1,  1.0000 },
   { 242207,  476,  3, -0.5000 },
   { 242207,  251,  4, -0.5000 },
   { 242207,  252,  4, -0.5000 },
@@ -5108,27 +5159,17 @@ static struct rppm_modifier_t __rppmmodifier_data[] = {
   { 267177,    4,  1,  1.0000 },
   { 267344,    1,  1,  1.0000 },
   { 268035,    4,  1,  1.0000 },
-  { 268191,    4,  1,  1.0000 },
   { 268501,    4,  1,  1.0000 },
   { 268512,    4,  1,  1.0000 },
   { 268516,    4,  1,  1.0000 },
   { 268517,    4,  1,  1.0000 },
   { 268531,    4,  1,  1.0000 },
   { 268553,    4,  1,  1.0000 },
-  { 268603,    4,  1,  1.0000 },
-  { 268605,    4,  1,  1.0000 },
-  { 268608,    4,  1,  1.0000 },
-  { 268617,    4,  1,  1.0000 },
-  { 268620,    4,  1,  1.0000 },
-  { 268624,    4,  1,  1.0000 },
   { 269009,    4,  1,  1.0000 },
   { 269066,    4,  1,  1.0000 },
   { 269853,    4,  1,  1.0000 },
-  { 269884,    4,  1,  1.0000 },
-  { 269886,    4,  1,  1.0000 },
   { 269891,    4,  1,  1.0000 },
   { 270668,    4,  1,  1.0000 },
-  { 270679,    4,  1,  1.0000 },
   { 270809,    4,  1,  1.0000 },
   { 270921,    4,  1,  1.0000 },
   { 271190,    4,  1,  1.0000 },
@@ -5143,10 +5184,8 @@ static struct rppm_modifier_t __rppmmodifier_data[] = {
   { 272797,    4,  1,  1.0000 },
   { 272817,    4,  1,  1.0000 },
   { 273153,    4,  1,  1.0000 },
-  { 273684,    4,  1,  1.0000 },
-  { 273975,    4,  1,  1.0000 },
-  { 273987,    4,  1,  1.0000 },
-  { 273991,    4,  1,  1.0000 },
+  { 273389,    4,  1,  1.0000 },
+  { 273835,    4,  1,  1.0000 },
   { 274071,    4,  1,  1.0000 },
   { 274072,    4,  1,  1.0000 },
   { 274145,    4,  1,  1.0000 },
@@ -5154,15 +5193,17 @@ static struct rppm_modifier_t __rppmmodifier_data[] = {
   { 274225,    4,  1,  1.0000 },
   { 274233,    4,  1,  1.0000 },
   { 274239,    4,  1,  1.0000 },
-  { 274429,    4,  1,  1.0000 },
+  { 274458,    4,  1,  1.0000 },
   { 274477,    4,  1,  1.0000 },
   { 274484,    4,  1,  1.0000 },
   { 274790,    4,  1,  1.0000 },
   { 275460,    4,  1,  1.0000 },
+  { 276123,    4,  1,  1.0000 },
   { 276135,    4,  1,  1.0000 },
   { 276176,    4,  1,  1.0000 },
   { 277522,    4,  1,  1.0000 },
   { 277905,    4,  1,  1.0000 },
+  { 277926,    4,  1,  1.0000 },
   { 278053,    4,  1,  1.0000 },
   { 278112,    4,  1,  1.0000 },
   { 278140,    4,  1,  1.0000 },
@@ -5178,19 +5219,26 @@ static struct rppm_modifier_t __rppmmodifier_data[] = {
   { 279426,    4,  1,  1.0000 },
   { 279449,    4,  1,  1.0000 },
   { 279786,    4,  1,  1.0000 },
-  { 279900,    4,  1,  1.0000 },
   { 279955,    4,  1,  1.0000 },
+  { 280163,    4,  1,  1.0000 },
+  { 280168,    4,  1,  1.0000 },
   { 280383,    4,  1,  1.0000 },
-  { 280386,    4,  1,  1.0000 },
+  { 280702,    4,  1,  1.0000 },
   { 280721,    4,  1,  1.0000 },
-  { 280778,    4,  1,  1.0000 },
-  { 280785,    4,  1,  1.0000 },
   { 280816,    4,  1,  1.0000 },
   { 280837,    4,  1,  1.0000 },
-  { 280851,    4,  1,  1.0000 },
   { 280854,    4,  1,  1.0000 },
-  { 280855,    4,  1,  1.0000 },
-  { 280860,    4,  1,  1.0000 },
   { 281712,    4,  1,  1.0000 },
+  { 284971,    4,  1,  1.0000 },
+  { 285023,    4,  1,  1.0000 },
+  { 286392,    4,  1,  1.0000 },
+  { 286586,    4,  1,  1.0000 },
+  { 288109,    4,  1,  1.0000 },
+  { 288328,    4,  1,  1.0000 },
+  { 288757,    4,  1,  1.0000 },
+  { 288804,    4,  1,  1.0000 },
+  { 289287,    4,  1,  1.0000 },
+  { 289289,    4,  1,  1.0000 },
+  { 289391,    4,  1,  1.0000 },
   {      0,    0,  0,  0.0000 },
 };

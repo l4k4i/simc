@@ -202,6 +202,8 @@ public:
   bool reverse, constant, quiet, overridden, can_cancel;
   bool requires_invalidation;
 
+  int reverse_stack_reduction; /// Number of stacks reduced when reverse = true
+
   // dynamic values
   double current_value;
   int current_stack;
@@ -250,6 +252,7 @@ public:
   virtual ~buff_t() {}
 
   buff_t( actor_pair_t q, const std::string& name, const spell_data_t* = spell_data_t::nil(), const item_t* item = nullptr );
+  buff_t( sim_t* sim, const std::string& name, const spell_data_t* = spell_data_t::nil(), const item_t* item = nullptr );
 protected:
   buff_t( const buff_creator_basics_t& params );
   friend struct buff_creation::buff_creator_t;
@@ -356,7 +359,6 @@ public:
   virtual void analyze();
   virtual void datacollection_begin();
   virtual void datacollection_end();
-  virtual void init();
 
   virtual timespan_t refresh_duration( const timespan_t& new_duration ) const;
   virtual timespan_t tick_time() const;
@@ -418,6 +420,8 @@ public:
   buff_t* set_rppm( rppm_scale_e scale = RPPM_NONE, double freq = -1, double mod = -1);
   buff_t* set_trigger_spell( const spell_data_t* s );
   buff_t* set_stack_change_callback( const buff_stack_change_callback_t& cb );
+  buff_t* set_reverse_stack_count( int value );
+  buff_t* set_stack_behavior( buff_stack_behavior b );
 
 private:
   void update_trigger_calculations();
@@ -425,6 +429,8 @@ private:
   void init_haste_type();
 
 };
+
+std::ostream& operator<<(std::ostream &os, const buff_t& p);
 
 struct stat_buff_t : public buff_t
 {
@@ -506,3 +512,24 @@ inline Buff* make_buff( Args&&... args )
                  "Buff must be derived from buff_t" );
   return new Buff( args... );
 }
+
+struct movement_buff_t : public buff_t
+{
+  movement_buff_t( player_t* p ) : buff_t( buff_creator_t( p, "movement" ).max_stack( 1 ) )
+  { }
+
+  bool trigger( int stacks, double value, double chance, timespan_t duration ) override;
+  void expire_override( int expiration_stacks, timespan_t remaining_duration ) override;
+};
+
+struct invulnerable_debuff_t : public buff_t
+{
+  invulnerable_debuff_t( player_t* p ) :
+    buff_t( p, "invulnerable" )
+  {
+    set_max_stack( 1 );
+  }
+
+  void start( int stacks, double value, timespan_t duration ) override;
+  void expire_override( int expiration_stacks, timespan_t remaining_duration ) override;
+};

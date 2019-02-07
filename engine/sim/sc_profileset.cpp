@@ -23,7 +23,7 @@ std::string format_time( double seconds, bool milliseconds = true )
   // For milliseconds, just use a quick format
   else if ( seconds < 1 )
   {
-    s << static_cast<int>( 1000 * seconds ) << "ms";
+    s << util::round( 1000.0 * seconds, 3 ) << "ms";
   }
   // Otherwise, do the whole thing
   else
@@ -135,10 +135,10 @@ void simulate_profileset( sim_t* parent, profileset::profile_set_t& set, sim_t*&
 
   // Save global statistics back to parent sim
   parent -> elapsed_cpu  += profile_sim -> elapsed_cpu;
-  if ( parent -> profileset_work_threads == 0 ) parent -> elapsed_time += profile_sim -> elapsed_time; // elapsed_time is meaningless for parallel sims
   parent -> init_time    += profile_sim -> init_time;
   parent -> merge_time   += profile_sim -> merge_time;
   parent -> analyze_time += profile_sim -> analyze_time;
+  parent -> event_mgr.total_events_processed += profile_sim -> event_mgr.total_events_processed;
 
   set.cleanup_options();
 }
@@ -380,9 +380,19 @@ sim_t* worker_t::sim() const
 
 void worker_t::execute()
 {
-  m_sim = new sim_t( m_parent, 0, m_profileset -> options() );
+  try
+  {
+    m_sim = new sim_t( m_parent, 0, m_profileset -> options() );
 
-  simulate_profileset( m_parent, *m_profileset, m_sim );
+    simulate_profileset( m_parent, *m_profileset, m_sim );
+  }
+  catch (const std::exception& e )
+  {
+    std::cerr << "\n\nError in profileset worker: ";
+    util::print_chained_exception(e);
+    std::cerr << "\n\n" << std::flush;
+    // TODO: find out how to cancel profilesets without deadlock.
+  }
 
   m_done = true;
 
@@ -513,6 +523,7 @@ bool profilesets_t::parse( sim_t* sim )
     if ( sim -> canceled )
     {
       set_state( DONE );
+      m_control.notify_one();
       return false;
     }
 
@@ -535,6 +546,7 @@ bool profilesets_t::parse( sim_t* sim )
     if ( control == nullptr )
     {
       set_state( DONE );
+      m_control.notify_one();
       return false;
     }
 
@@ -566,6 +578,8 @@ bool profilesets_t::parse( sim_t* sim )
       std::cerr <<  "ERROR! Profileset '" << profileset_name << "' Setup failure: "
                 << e.what() << std::endl;
       set_state( DONE );
+      m_control.notify_one();
+      delete control;
       return false;
     }
 
@@ -737,6 +751,9 @@ bool profilesets_t::iterate( sim_t* parent )
   // Output profileset progressbar whenever we finish anything
   output_progressbar( parent );
 
+  // Update parent elapsed_time
+  parent -> elapsed_time += util::wall_time() - m_start_time;
+
   parent -> control = original_opts;
 
   set_state( DONE );
@@ -802,7 +819,7 @@ void profilesets_t::output_progressbar( const sim_t* parent ) const
   auto time_left = ( work_left / m_max_workers ) * average_per_sim;
 
   // Average time per done simulation
-  s << " avg=" << format_time( average_per_sim );
+  s << " avg=" << format_time( average_per_sim / as<double>( m_max_workers ) );
 
   // Elapsed time
   s << " done=" << format_time( elapsed, false );
@@ -928,7 +945,13 @@ void profilesets_t::generate_sorted_profilesets( std::vector<const profile_set_t
 
   // Sort to descending with mean value
   range::sort( out, []( const profile_set_t* l, const profile_set_t* r ) {
-    return l -> result().median() > r -> result().median();
+    double lv = l -> result().median(), rv = r -> result().median();
+    if ( lv == rv )
+    {
+      return l->name() < r->name();
+    }
+
+    return lv > rv;
   } );
 }
 
