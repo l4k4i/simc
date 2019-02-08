@@ -212,7 +212,8 @@ struct apitoken_initializer_t
   ~apitoken_initializer_t()
   { bcp_api::token_save(); }
 };
-#endifstruct special_effect_initializer_t
+#endif
+struct special_effect_initializer_t
 {
   special_effect_initializer_t()
   {
