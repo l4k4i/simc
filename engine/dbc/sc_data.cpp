@@ -553,8 +553,8 @@ std::string power_hotfix_entry_t::to_str() const
 void spell_hotfix_entry_t::apply_hotfix( bool ptr )
 {
   spell_data_t* s = hotfix_db_.clone_spell( id_, ptr );
-
-  assert( s && "Could not clone spell to apply hotfix" );
+  //=====FIX=====
+  //assert( s && "Could not clone spell to apply hotfix" );
 
   // Record original DBC value before overwriting it
   dbc_value_ = s -> get_field( field_name_ );
@@ -569,8 +569,8 @@ void spell_hotfix_entry_t::apply_hotfix( bool ptr )
     std::cerr << std::endl;
     return;
   }
-
-  do_hotfix( this, s );
+  //===FIX===
+  //  do_hotfix( this, s );
 }
 
 void effect_hotfix_entry_t::apply_hotfix( bool ptr )

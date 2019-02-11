@@ -1050,8 +1050,8 @@ public:
 
     if ( this == spell_data_t::nil() || this == spell_data_t::not_found() )
       return *spelleffect_data_t::nil();
-
-    assert( idx <= _effects -> size() && "effect index out of bound!" );
+    //===FIX====
+    //assert( idx <= _effects -> size() && "effect index out of bound!" );
 
     return *( ( *_effects )[ idx - 1 ] );
   }
@@ -1827,7 +1827,8 @@ public:
   // Return the item with the given id, or NULL
   T* get( bool ptr, unsigned id ) const
   {
-    assert( initialized( maybe_ptr( ptr ) ) );
+    //===FIX===
+    //assert( initialized( maybe_ptr( ptr ) ) );
     T* p = std::lower_bound( idx[ maybe_ptr( ptr ) ].first, idx[ maybe_ptr( ptr ) ].second, id, id_compare<T, KeyPolicy>() );
     if ( p != idx[ maybe_ptr( ptr ) ].second && KeyPolicy::id( *p ) == id )
       return p;

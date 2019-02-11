@@ -249,7 +249,8 @@ int sim_t::main( const std::vector<std::string>& args )
     cache_initializer_t cache_init( get_cache_directory() + "/simc_cache.dat" );
 #if !defined( SC_NO_NETWORKING )
     apitoken_initializer_t apitoken_init;
-#endif    dbc_initializer_t dbc_init;
+#endif
+    dbc_initializer_t dbc_init;
     module_t::init();
     unique_gear::register_hotfixes();
 
@@ -366,7 +367,6 @@ int sim_t::main( const std::vector<std::string>& args )
 // ==========================================================================
 // MAIN
 // ==========================================================================
-
 
 
 

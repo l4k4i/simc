@@ -342,6 +342,8 @@ void progress_bar_t::output( bool finished )
   s << status;
   s << terminator;
 
+  //====FIX====
+  util::printf( "\n %s \n",s.str());
   std::cout << s.str() << std::flush;
 }
 
