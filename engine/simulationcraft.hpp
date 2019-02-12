@@ -16,7 +16,7 @@
 
 // Platform, compiler and general configuration
 #include "config.hpp"
-
+#include <emscripten.h>
 #include <algorithm>
 #include <cassert>
 #include <cctype>
