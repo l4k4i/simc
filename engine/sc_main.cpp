@@ -352,7 +352,6 @@ int sim_t::main( const std::vector<std::string>& args )
         }
 
       std::cout << std::endl;
-
       return canceled;
     }
   catch (const std::nested_exception& e) {
